@@ -6,6 +6,7 @@ use App\Http\Requests\StoreServiceTypeRequest;
 use App\Http\Requests\UpdateServiceTypeRequest;
 use App\Models\ServiceType;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,15 +15,23 @@ class ServiceTypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->trim()->toString();
+
         $serviceTypes = ServiceType::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('MasterData/ServiceTypes/Index', [
             'serviceTypes' => $serviceTypes,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

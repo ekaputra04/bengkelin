@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceTypeController;
 use Illuminate\Foundation\Application;
@@ -15,11 +16,16 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::prefix('dashboard')
+    ->middleware(['auth', 'verified'])
+    ->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Dashboard');
+        })->name('dashboard');
 
-Route::resource('service-types', ServiceTypeController::class)->middleware(['auth', 'verified']);
+        Route::resource('service-types', ServiceTypeController::class);
+        Route::resource('mechanics', MechanicController::class);
+    });
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

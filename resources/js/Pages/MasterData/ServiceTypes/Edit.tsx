@@ -33,11 +33,11 @@ export default function Edit({ serviceType }: Props) {
 
                     <div>
                         <h1 className="font-semibold text-2xl tracking-tight">
-                            Edit Service Type
+                            Edit Jenis Layanan
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Update service information.
+                            Perbarui informasi jenis layanan.
                         </p>
                     </div>
                 </div>
@@ -50,7 +50,7 @@ export default function Edit({ serviceType }: Props) {
                             serviceType.id,
                         )}
                         method="put"
-                        submitLabel="Update Service"
+                        submitLabel="Update Jenis Layanan"
                     />
                 </div>
             </div>

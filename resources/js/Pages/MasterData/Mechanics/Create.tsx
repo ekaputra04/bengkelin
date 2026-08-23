@@ -1,17 +1,17 @@
 import { ArrowLeft } from "lucide-react";
 
-import { ServiceTypeForm } from "@/Components/ServiceTypes/ServiceTypeForm";
+import { MechanicForm } from "@/Components/Mechanics/MechanicForm";
 import { Button } from "@/Components/ui/button";
 import { Head, Link } from "@inertiajs/react";
 
 export default function Create() {
     return (
         <div>
-            <Head title="Tambah Jenis Layanan" />
+            <Head title="Tambah Mekanik" />
 
             <div className="space-y-6 mx-auto p-6 max-w-3xl">
                 <div className="flex items-center gap-4">
-                    <Link href={route("service-types.index")}>
+                    <Link href={route("mechanics.index")}>
                         <Button variant="ghost" size="icon">
                             <ArrowLeft />
                         </Button>
@@ -19,20 +19,20 @@ export default function Create() {
 
                     <div>
                         <h1 className="font-semibold text-2xl tracking-tight">
-                            Tambah Jenis Layanan
+                            Tambah Mekanik
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Tambahkan jenis layanan baru dalam bengkel.
+                            Tambahkan mekanik baru dalam bengkel.
                         </p>
                     </div>
                 </div>
 
                 <div className="bg-card p-6 border rounded-xl">
-                    <ServiceTypeForm
-                        submitUrl={route("service-types.store")}
+                    <MechanicForm
+                        submitUrl={route("mechanics.store")}
                         method="post"
-                        submitLabel="Tambah Layanan Servis"
+                        submitLabel="Tambah Mekanik"
                     />
                 </div>
             </div>

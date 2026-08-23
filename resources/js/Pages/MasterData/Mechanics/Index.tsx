@@ -2,11 +2,11 @@ import { Plus, Search, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { DataTable } from "@/Components/DataTable/DataTable";
-import { ServiceTypeColumns } from "@/Components/ServiceTypes/ServiceTypeColumns";
+import { MechanicColumns } from "@/Components/Mechanics/MechanicColumns";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TServiceType } from "@/types/types";
+import { TMechanic } from "@/types/types";
 import { Head, Link, router } from "@inertiajs/react";
 
 interface PaginationLink {
@@ -15,8 +15,8 @@ interface PaginationLink {
     active: boolean;
 }
 
-interface ServiceTypesPagination {
-    data: TServiceType[];
+interface MechanicsPagination {
+    data: TMechanic[];
     current_page: number;
     last_page: number;
     per_page: number;
@@ -27,20 +27,20 @@ interface ServiceTypesPagination {
 }
 
 interface Props {
-    serviceTypes: ServiceTypesPagination;
+    mechanics: MechanicsPagination;
     filters: {
         search: string;
     };
 }
 
-export default function Index({ serviceTypes, filters }: Props) {
+export default function Index({ mechanics, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
 
     const handleSearch = (event: FormEvent) => {
         event.preventDefault();
 
         router.get(
-            route("service-types.index"),
+            route("mechanics.index"),
             {
                 search: search || undefined,
             },
@@ -55,7 +55,7 @@ export default function Index({ serviceTypes, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("service-types.index"),
+            route("mechanics.index"),
             {},
             {
                 preserveState: true,
@@ -66,24 +66,24 @@ export default function Index({ serviceTypes, filters }: Props) {
 
     return (
         <DashboardLayout>
-            <Head title="Jenis Layanan" />
+            <Head title="Mekanik" />
 
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="font-semibold text-2xl tracking-tight">
-                            Jenis Layanan
+                            Mekanik
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Kelola jenis layanan yang tersedia di bengkel Anda.
+                            Kelola mekanik yang bekerja di bengkel Anda.
                         </p>
                     </div>
 
-                    <Link href={route("service-types.create")}>
+                    <Link href={route("mechanics.create")}>
                         <Button>
                             <Plus className="mr-2 w-4 h-4" />
-                            Tambah Layanan
+                            Tambah Mekanik
                         </Button>
                     </Link>
                 </div>
@@ -98,7 +98,7 @@ export default function Index({ serviceTypes, filters }: Props) {
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Cari layanan..."
+                            placeholder="Cari mekanik..."
                             className="pr-10 pl-9"
                         />
 
@@ -120,11 +120,11 @@ export default function Index({ serviceTypes, filters }: Props) {
                 </form>
 
                 <DataTable
-                    columns={ServiceTypeColumns}
-                    data={serviceTypes.data}
-                    prevPageUrl={serviceTypes.prev_page_url}
-                    nextPageUrl={serviceTypes.next_page_url}
-                    total={serviceTypes.total}
+                    columns={MechanicColumns}
+                    data={mechanics.data}
+                    prevPageUrl={mechanics.prev_page_url}
+                    nextPageUrl={mechanics.next_page_url}
+                    total={mechanics.total}
                 />
             </div>
         </DashboardLayout>

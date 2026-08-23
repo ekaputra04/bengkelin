@@ -10,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/Components/ui/table";
+import { router } from "@inertiajs/react";
 import { ColumnDef, RowData, useTable } from "@tanstack/react-table";
 
 import { Button } from "../ui/button";
@@ -18,11 +19,17 @@ import { DataTableFeatures, features } from "./DataTableFeatures";
 interface DataTableProps<TData extends RowData> {
     columns: ColumnDef<DataTableFeatures, TData>[];
     data: TData[];
+    prevPageUrl?: string | null;
+    nextPageUrl?: string | null;
+    total?: number;
 }
 
 export function DataTable<TData extends RowData>({
     columns,
     data,
+    prevPageUrl,
+    nextPageUrl,
+    total,
 }: DataTableProps<TData>) {
     const table = useTable({
         features,
@@ -74,23 +81,36 @@ export function DataTable<TData extends RowData>({
                     )}
                 </TableBody>
             </Table>
-            <div className="flex justify-end items-center space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    <ArrowLeft />
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    <ArrowRight />
-                </Button>
+            <div className="flex justify-between items-center">
+                <div className="text-muted-foreground text-sm">
+                    Menampilkan {data.length} dari {total} data
+                </div>
+                <div className="flex justify-between items-center space-x-2 py-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            if (prevPageUrl) {
+                                router.visit(prevPageUrl);
+                            }
+                        }}
+                        disabled={prevPageUrl == null}
+                    >
+                        <ArrowLeft />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            if (nextPageUrl) {
+                                router.visit(nextPageUrl);
+                            }
+                        }}
+                        disabled={nextPageUrl == null}
+                    >
+                        <ArrowRight />
+                    </Button>
+                </div>
             </div>
         </div>
     );

@@ -2,18 +2,17 @@ import { ArrowLeft, Pencil } from "lucide-react";
 
 import { ServiceTypeStatusBadge } from "@/Components/ServiceTypes/ServiceTypeStatusBadge";
 import { Button } from "@/Components/ui/button";
-import { formatCurrency } from "@/lib/utils";
-import { TServiceType } from "@/types/types";
+import { TMechanic } from "@/types/types";
 import { Head, Link } from "@inertiajs/react";
 
 interface Props {
-    serviceType: TServiceType;
+    mechanic: TMechanic;
 }
 
-export default function Show({ serviceType }: Props) {
+export default function Show({ mechanic }: Props) {
     return (
         <div>
-            <Head title={serviceType.name} />
+            <Head title={mechanic.name} />
 
             <div className="space-y-6 mx-auto p-6 max-w-3xl">
                 <div className="flex justify-between items-center">
@@ -26,16 +25,16 @@ export default function Show({ serviceType }: Props) {
 
                         <div>
                             <h1 className="font-semibold text-2xl">
-                                {serviceType.name}
+                                {mechanic.name}
                             </h1>
 
                             <p className="text-muted-foreground text-sm">
-                                Detail layanan
+                                Detail mekanik
                             </p>
                         </div>
                     </div>
 
-                    <Link href={route("service-types.edit", serviceType.id)}>
+                    <Link href={route("service-types.edit", mechanic.id)}>
                         <Button>
                             <Pencil className="mr-2 w-4 h-4" />
                             Edit
@@ -48,21 +47,21 @@ export default function Show({ serviceType }: Props) {
                         <div className="space-y-6 p-6">
                             <div>
                                 <p className="text-muted-foreground text-sm">
-                                    Nama Layanan
+                                    Nama Mekanik
                                 </p>
 
                                 <p className="mt-1 font-medium">
-                                    {serviceType.name}
+                                    {mechanic.name}
                                 </p>
                             </div>
 
                             <div>
                                 <p className="text-muted-foreground text-sm">
-                                    Durasi Layanan
+                                    Nomer Telepon
                                 </p>
 
                                 <p className="mt-1 font-medium">
-                                    {serviceType.duration_minutes} minutes
+                                    {mechanic.phone}
                                 </p>
                             </div>
 
@@ -73,42 +72,9 @@ export default function Show({ serviceType }: Props) {
 
                                 <div className="mt-1">
                                     <ServiceTypeStatusBadge
-                                        isActive={serviceType.is_active}
+                                        isActive={mechanic.is_active}
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6 p-6">
-                            <div>
-                                <p className="text-muted-foreground text-sm">
-                                    Biaya Layanan
-                                </p>
-
-                                <p className="mt-1 font-semibold text-lg">
-                                    {formatCurrency(serviceType.price)}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p className="text-muted-foreground text-sm">
-                                    Uang Muka
-                                </p>
-
-                                <p className="mt-1 font-semibold text-lg">
-                                    {formatCurrency(serviceType.dp_amount)}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p className="text-muted-foreground text-sm">
-                                    Deskripsi
-                                </p>
-
-                                <p className="mt-1 text-sm">
-                                    {serviceType.description ||
-                                        "No description."}
-                                </p>
                             </div>
                         </div>
                     </div>

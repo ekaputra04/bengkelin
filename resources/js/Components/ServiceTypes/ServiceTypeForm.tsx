@@ -11,15 +11,6 @@ import { useForm } from "@inertiajs/react";
 
 import { Spinner } from "../ui/spinner";
 
-export interface ServiceTypeFormData {
-    name: string;
-    description: string;
-    duration_minutes: number;
-    price: number;
-    dp_amount: number;
-    is_active: boolean;
-}
-
 interface ServiceTypeFormProps {
     initialData?: Partial<TServiceType>;
     submitUrl: string;
@@ -65,6 +56,7 @@ export function ServiceTypeForm({
                             form.setData("name", event.target.value)
                         }
                         placeholder="contoh: ganti oli"
+                        disabled={form.processing}
                     />
 
                     {form.errors.name && (
@@ -90,6 +82,7 @@ export function ServiceTypeForm({
                                 Number(event.target.value),
                             )
                         }
+                        disabled={form.processing}
                     />
 
                     {form.errors.duration_minutes && (
@@ -110,6 +103,7 @@ export function ServiceTypeForm({
                         onChange={(event) =>
                             form.setData("price", Number(event.target.value))
                         }
+                        disabled={form.processing}
                     />
 
                     {form.errors.price && (
@@ -133,6 +127,7 @@ export function ServiceTypeForm({
                                 Number(event.target.value),
                             )
                         }
+                        disabled={form.processing}
                     />
 
                     {form.errors.dp_amount && (
@@ -154,6 +149,7 @@ export function ServiceTypeForm({
                     }
                     placeholder="Describe the service..."
                     rows={4}
+                    disabled={form.processing}
                 />
 
                 {form.errors.description && (
@@ -179,6 +175,7 @@ export function ServiceTypeForm({
                     onCheckedChange={(checked) =>
                         form.setData("is_active", checked)
                     }
+                    disabled={form.processing}
                 />
             </div>
 

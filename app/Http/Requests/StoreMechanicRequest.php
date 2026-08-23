@@ -12,7 +12,7 @@ class StoreMechanicRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,20 @@ class StoreMechanicRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'phone' => [
+                'required',
+                'string',
+                'max:20',
+            ],
+            'is_active' => [
+                'required',
+                'boolean',
+            ],
         ];
     }
 }
