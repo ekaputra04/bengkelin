@@ -12,7 +12,7 @@ class StoreServiceTypeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,35 @@ class StoreServiceTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                'unique:service_types,name',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
+            'duration_minutes' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+            'dp_amount' => [
+                'required',
+                'numeric',
+                'min:0',
+                'lte:price',
+            ],
+            'is_active' => [
+                'boolean',
+            ],
         ];
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateServiceTypeRequest extends FormRequest
 {
@@ -12,7 +12,7 @@ class UpdateServiceTypeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,8 +22,39 @@ class UpdateServiceTypeRequest extends FormRequest
      */
     public function rules(): array
     {
+        $serviceType = $this->route('service_type');
+
         return [
-            //
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('service_types', 'name')
+                    ->ignore($serviceType),
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
+            'duration_minutes' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+            'dp_amount' => [
+                'required',
+                'numeric',
+                'min:0',
+                'lte:price',
+            ],
+            'is_active' => [
+                'boolean',
+            ],
         ];
     }
 }
