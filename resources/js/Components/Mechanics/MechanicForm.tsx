@@ -9,6 +9,7 @@ import { TMechanic } from "@/types/types";
 import { useForm } from "@inertiajs/react";
 
 import { Spinner } from "../ui/spinner";
+import { toast } from "../ui/toast";
 
 interface MechanicFormProps {
     initialData?: Partial<TMechanic>;

@@ -6,6 +6,7 @@ enum BookingStatus: string
 {
   case PENDING_PAYMENT = 'pending_payment';
   case CONFIRMED = 'confirmed';
+  case IN_PROGRESS = 'in_progress';
   case COMPLETED = 'completed';
   case CANCELLED = 'cancelled';
   case EXPIRED = 'expired';

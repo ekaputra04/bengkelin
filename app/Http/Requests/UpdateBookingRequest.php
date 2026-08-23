@@ -2,17 +2,19 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UserRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBookingRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Hanya admin yang boleh mengubah status pengerjaan.
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()?->role === UserRole::ADMIN;
     }
 
     /**
@@ -23,7 +25,17 @@ class UpdateBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'status' => [
+                'required',
+                Rule::in(['in_progress', 'completed']),
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status pengerjaan tidak valid.',
         ];
     }
 }

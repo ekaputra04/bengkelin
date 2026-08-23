@@ -43,13 +43,42 @@ const data = {
                 },
             ],
         },
+        {
+            title: "Servis Saya",
+            url: "",
+            items: [
+                {
+                    title: "Pengajuan Servis",
+                    url: "/dashboard/service-requests",
+                    isActive: false,
+                },
+            ],
+        },
+        {
+            title: "Operasional",
+            url: "",
+            items: [
+                {
+                    title: "Pengerjaan Bengkel",
+                    url: "/dashboard/work-orders",
+                    isActive: false,
+                },
+            ],
+        },
     ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar {...props}>
-            <SidebarHeader>Halo</SidebarHeader>
+            <SidebarHeader>
+                <div className="">
+                    <h1 className="font-bold text-xl">Bengkelin</h1>
+                    <p className="text-muted-foreground text-xs">
+                        Sistem Reservasi Bengkel
+                    </p>
+                </div>
+            </SidebarHeader>
             <SidebarContent>
                 {data.navMain.map((item) => (
                     <SidebarGroup key={item.title}>

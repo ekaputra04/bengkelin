@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingRequestController;
 use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceTypeController;
@@ -24,7 +26,21 @@ Route::prefix('dashboard')
         })->name('dashboard');
 
         Route::resource('service-types', ServiceTypeController::class);
+
         Route::resource('mechanics', MechanicController::class);
+
+        Route::resource('service-requests', BookingRequestController::class)
+            ->only(['index', 'create', 'store']);
+
+        Route::get(
+            'work-orders',
+            [BookingController::class, 'index']
+        )->name('work-orders.index');
+
+        Route::patch(
+            'work-orders/{booking}',
+            [BookingController::class, 'update']
+        )->name('work-orders.update');
     });
 
 Route::middleware('auth')->group(function () {
@@ -33,4 +49,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

@@ -1,8 +1,10 @@
 "use client";
 
-import { Eye, MoreHorizontal, Pencil } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Trash } from "lucide-react";
 
 import { formatCurrency } from "@/lib/utils";
+import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
+import { useServiceTypeStore } from "@/stores/use-service-type-store";
 import { TServiceType } from "@/types/types";
 import { Link } from "@inertiajs/react";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -54,7 +56,8 @@ export const ServiceTypeColumns = columnHelper.columns([
         header: "Aksi",
         cell: ({ row }) => {
             const serviceType = row.original;
-
+            const { openDialog } = useIsDialogOpenStore();
+            const { setSelectedData } = useServiceTypeStore();
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
@@ -80,6 +83,14 @@ export const ServiceTypeColumns = columnHelper.columns([
                                 <Pencil /> Edit
                             </DropdownMenuItem>
                         </Link>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                openDialog("delete");
+                                setSelectedData(serviceType);
+                            }}
+                        >
+                            <Trash /> Hapus
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

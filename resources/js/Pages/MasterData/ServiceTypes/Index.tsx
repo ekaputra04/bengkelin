@@ -2,10 +2,16 @@ import { Plus, Search, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { DataTable } from "@/Components/DataTable/DataTable";
+import DialogTemplate from "@/Components/DialogTemplate";
+import { DeleteMechanicForm } from "@/Components/Mechanics/DeleteMechanicForm";
+import { DeleteServiceTypeForm } from "@/Components/ServiceTypes/DeleteServiceTypeForm";
 import { ServiceTypeColumns } from "@/Components/ServiceTypes/ServiceTypeColumns";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
+import { useMechanicStore } from "@/stores/use-mechanic-store";
+import { useServiceTypeStore } from "@/stores/use-service-type-store";
 import { TServiceType } from "@/types/types";
 import { Head, Link, router } from "@inertiajs/react";
 
@@ -35,6 +41,9 @@ interface Props {
 
 export default function Index({ serviceTypes, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
+
+    const { dialogType } = useIsDialogOpenStore();
+    const { selectedData } = useServiceTypeStore();
 
     const handleSearch = (event: FormEvent) => {
         event.preventDefault();
@@ -127,6 +136,14 @@ export default function Index({ serviceTypes, filters }: Props) {
                     total={serviceTypes.total}
                 />
             </div>
+            {dialogType == "delete" && selectedData && (
+                <DialogTemplate
+                    title="Hapus Layanan"
+                    description="Anda yakin ingin menghapus layanan ini?"
+                >
+                    <DeleteServiceTypeForm serviceType={selectedData} />
+                </DialogTemplate>
+            )}
         </DashboardLayout>
     );
 }

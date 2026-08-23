@@ -1,17 +1,13 @@
-import { Plus, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { DataTable } from "@/Components/DataTable/DataTable";
-import DialogTemplate from "@/Components/DialogTemplate";
-import { DeleteMechanicForm } from "@/Components/Mechanics/DeleteMechanicForm";
-import { MechanicColumns } from "@/Components/Mechanics/MechanicColumns";
+import { WorkOrderColumns } from "@/Components/WorkOrders/WorkOrderColumns";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
-import { useMechanicStore } from "@/stores/use-mechanic-store";
-import { TMechanic } from "@/types/types";
-import { Head, Link, router } from "@inertiajs/react";
+import { TWorkOrder } from "@/types/types";
+import { Head, router } from "@inertiajs/react";
 
 interface PaginationLink {
     url: string | null;
@@ -19,8 +15,8 @@ interface PaginationLink {
     active: boolean;
 }
 
-interface MechanicsPagination {
-    data: TMechanic[];
+interface WorkOrdersPagination {
+    data: TWorkOrder[];
     current_page: number;
     last_page: number;
     per_page: number;
@@ -31,23 +27,20 @@ interface MechanicsPagination {
 }
 
 interface Props {
-    mechanics: MechanicsPagination;
+    bookings: WorkOrdersPagination;
     filters: {
         search: string;
     };
 }
 
-export default function Index({ mechanics, filters }: Props) {
+export default function Index({ bookings, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
-
-    const { dialogType } = useIsDialogOpenStore();
-    const { selectedData } = useMechanicStore();
 
     const handleSearch = (event: FormEvent) => {
         event.preventDefault();
 
         router.get(
-            route("mechanics.index"),
+            route("work-orders.index"),
             {
                 search: search || undefined,
             },
@@ -62,7 +55,7 @@ export default function Index({ mechanics, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("mechanics.index"),
+            route("work-orders.index"),
             {},
             {
                 preserveState: true,
@@ -73,26 +66,18 @@ export default function Index({ mechanics, filters }: Props) {
 
     return (
         <DashboardLayout>
-            <Head title="Mekanik" />
+            <Head title="Pengerjaan Bengkel" />
 
             <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="font-semibold text-2xl tracking-tight">
-                            Mekanik
-                        </h1>
+                <div>
+                    <h1 className="font-semibold text-2xl tracking-tight">
+                        Pengerjaan Bengkel
+                    </h1>
 
-                        <p className="text-muted-foreground text-sm">
-                            Kelola mekanik yang bekerja di bengkel Anda.
-                        </p>
-                    </div>
-
-                    <Link href={route("mechanics.create")}>
-                        <Button>
-                            <Plus className="mr-2 w-4 h-4" />
-                            Tambah Mekanik
-                        </Button>
-                    </Link>
+                    <p className="text-muted-foreground text-sm">
+                        Pantau order yang sedang dan akan
+                        dikerjakan mekanik.
+                    </p>
                 </div>
 
                 <form
@@ -104,8 +89,10 @@ export default function Index({ mechanics, filters }: Props) {
 
                         <Input
                             value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Cari mekanik..."
+                            onChange={(event) =>
+                                setSearch(event.target.value)
+                            }
+                            placeholder="Cari kode order, pelanggan, atau plat nomor..."
                             className="pr-10 pl-9"
                         />
 
@@ -127,21 +114,13 @@ export default function Index({ mechanics, filters }: Props) {
                 </form>
 
                 <DataTable
-                    columns={MechanicColumns}
-                    data={mechanics.data}
-                    prevPageUrl={mechanics.prev_page_url}
-                    nextPageUrl={mechanics.next_page_url}
-                    total={mechanics.total}
+                    columns={WorkOrderColumns}
+                    data={bookings.data}
+                    prevPageUrl={bookings.prev_page_url}
+                    nextPageUrl={bookings.next_page_url}
+                    total={bookings.total}
                 />
             </div>
-            {dialogType == "delete" && selectedData && (
-                <DialogTemplate
-                    title="Hapus Layanan"
-                    description="Anda yakin ingin menghapus layanan ini?"
-                >
-                    <DeleteMechanicForm mechanic={selectedData} />
-                </DialogTemplate>
-            )}
         </DashboardLayout>
     );
 }

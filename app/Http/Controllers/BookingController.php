@@ -2,65 +2,104 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
-use App\Http\Requests\StoreBookingRequest;
+use App\Enums\BookingStatus;
+use App\Enums\UserRole;
 use App\Http\Requests\UpdateBookingRequest;
+use App\Models\Booking;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class BookingController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Modul pengerjaan bengkel: daftar order beserta
+     * status pengerjaannya (khusus admin).
      */
-    public function index()
+    public function index(Request $request): Response
     {
-        //
+        abort_unless(
+            $request->user()->role === UserRole::ADMIN,
+            403
+        );
+
+        $search = $request->string('search')->trim()->toString();
+
+        $bookings = Booking::query()
+            ->with(['user', 'vehicle', 'serviceType', 'mechanic'])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where(
+                        'booking_code',
+                        'like',
+                        "%{$search}%"
+                    )->orWhereHas('vehicle', function ($query) use ($search) {
+                        $query->where(
+                            'license_plate',
+                            'like',
+                            "%{$search}%"
+                        );
+                    })->orWhereHas('user', function ($query) use ($search) {
+                        $query->where(
+                            'name',
+                            'like',
+                            "%{$search}%"
+                        );
+                    });
+                });
+            })
+            ->latest('start_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('WorkOrders/Index', [
+            'bookings' => $bookings,
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Transisi status pengerjaan:
+     * confirmed -> in_progress -> completed.
      */
-    public function create()
-    {
-        //
-    }
+    public function update(
+        UpdateBookingRequest $request,
+        Booking $booking
+    ): RedirectResponse {
+        /** @var array<string, BookingStatus> $transitions */
+        $transitions = [
+            BookingStatus::CONFIRMED->value => BookingStatus::IN_PROGRESS,
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreBookingRequest $request)
-    {
-        //
-    }
+            BookingStatus::IN_PROGRESS->value => BookingStatus::COMPLETED,
+        ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Booking $booking)
-    {
-        //
-    }
+        $target =
+            $transitions[$booking->status->value] ?? null;
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Booking $booking)
-    {
-        //
-    }
+        if (
+            ! $target ||
+            $request->validated('status') !== $target->value
+        ) {
+            return back()->with(
+                'error',
+                "Order {$booking->booking_code} tidak bisa dipindah ke status tersebut."
+            );
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBookingRequest $request, Booking $booking)
-    {
-        //
-    }
+        $booking->update([
+            'status' => $target,
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Booking $booking)
-    {
-        //
+            'completed_at' => $target === BookingStatus::COMPLETED
+                ? now()
+                : null,
+        ]);
+
+        return back()->with(
+            'success',
+            "Order {$booking->booking_code} diperbarui."
+        );
     }
 }

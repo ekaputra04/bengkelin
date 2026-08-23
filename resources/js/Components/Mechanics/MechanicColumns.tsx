@@ -1,9 +1,10 @@
 "use client";
 
-import { Eye, MoreHorizontal, Pencil } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Trash } from "lucide-react";
 
-import { formatCurrency } from "@/lib/utils";
-import { TMechanic, TServiceType } from "@/types/types";
+import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
+import { useMechanicStore } from "@/stores/use-mechanic-store";
+import { TMechanic } from "@/types/types";
 import { Link } from "@inertiajs/react";
 import { createColumnHelper } from "@tanstack/react-table";
 
@@ -35,7 +36,9 @@ export const MechanicColumns = columnHelper.columns([
     columnHelper.display({
         header: "Aksi",
         cell: ({ row }) => {
-            const serviceType = row.original;
+            const mechanic = row.original;
+            const { openDialog } = useIsDialogOpenStore();
+            const { setSelectedData } = useMechanicStore();
 
             return (
                 <DropdownMenu>
@@ -47,17 +50,25 @@ export const MechanicColumns = columnHelper.columns([
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="end">
-                        <Link href={route("mechanics.show", serviceType.id)}>
+                        <Link href={route("mechanics.show", mechanic.id)}>
                             <DropdownMenuItem>
                                 <Eye /> Lihat Detail
                             </DropdownMenuItem>
                         </Link>
 
-                        <Link href={route("mechanics.edit", serviceType.id)}>
+                        <Link href={route("mechanics.edit", mechanic.id)}>
                             <DropdownMenuItem>
                                 <Pencil /> Edit
                             </DropdownMenuItem>
                         </Link>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                openDialog("delete");
+                                setSelectedData(mechanic);
+                            }}
+                        >
+                            <Trash /> Hapus
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             );
