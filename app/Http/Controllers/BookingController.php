@@ -26,6 +26,14 @@ class BookingController extends Controller
 
         $search = $request->string('search')->trim()->toString();
 
+        /*
+         * Filter opsional berdasarkan status booking;
+         * nilai tidak dikenal diabaikan.
+         */
+        $status = BookingStatus::tryFrom(
+            $request->string('status')->trim()->toString()
+        );
+
         $bookings = Booking::query()
             ->with(['user', 'vehicle', 'serviceType', 'mechanic'])
             ->when($search, function ($query) use ($search) {
@@ -49,6 +57,9 @@ class BookingController extends Controller
                     });
                 });
             })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
             ->latest('start_at')
             ->paginate(10)
             ->withQueryString();
@@ -57,6 +68,7 @@ class BookingController extends Controller
             'bookings' => $bookings,
             'filters' => [
                 'search' => $search,
+                'status' => $status?->value,
             ],
         ]);
     }

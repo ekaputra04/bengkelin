@@ -30,7 +30,7 @@ interface Props {
 
 export default function Index({ bookingRequests }: Props) {
     return (
-        <DashboardLayout>
+        <DashboardLayout breadcrumbs={[{ label: "Pengajuan Servis" }]}>
             <Head title="Pengajuan Servis" />
 
             <div className="space-y-6">

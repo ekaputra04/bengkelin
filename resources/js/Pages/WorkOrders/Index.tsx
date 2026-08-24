@@ -2,7 +2,7 @@ import { Search, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { DataTable } from "@/Components/DataTable/DataTable";
-import { WorkOrderColumns } from "@/Components/WorkOrders/WorkOrderColumns";
+import { statusLabels, WorkOrderColumns } from "@/Components/WorkOrders/WorkOrderColumns";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import DashboardLayout from "@/Layouts/DashboardLayout";
@@ -30,42 +30,60 @@ interface Props {
     bookings: WorkOrdersPagination;
     filters: {
         search: string;
+        status?: string | null;
     };
 }
 
+/*
+ * Sama dengan enum BookingStatus di backend.
+ */
+const statusOptions = Object.entries(statusLabels);
+
 export default function Index({ bookings, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
+    const [status, setStatus] = useState(filters.status ?? "");
 
-    const handleSearch = (event: FormEvent) => {
-        event.preventDefault();
-
+    const applyFilters = (
+        nextSearch: string,
+        nextStatus: string,
+    ) => {
         router.get(
             route("work-orders.index"),
             {
-                search: search || undefined,
+                search: nextSearch || undefined,
+                status: nextStatus || undefined,
             },
             {
                 preserveState: true,
                 replace: true,
             },
         );
+    };
+
+    const handleSearch = (event: FormEvent) => {
+        event.preventDefault();
+
+        applyFilters(search, status);
     };
 
     const handleClearSearch = () => {
         setSearch("");
 
-        router.get(
-            route("work-orders.index"),
-            {},
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        applyFilters("", status);
+    };
+
+    const handleStatusChange = (
+        event: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const nextStatus = event.target.value;
+
+        setStatus(nextStatus);
+
+        applyFilters(search, nextStatus);
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout breadcrumbs={[{ label: "Pengerjaan Bengkel" }]}>
             <Head title="Pengerjaan Bengkel" />
 
             <div className="space-y-6">
@@ -82,7 +100,7 @@ export default function Index({ bookings, filters }: Props) {
 
                 <form
                     onSubmit={handleSearch}
-                    className="flex items-center gap-2"
+                    className="flex flex-wrap items-center gap-2"
                 >
                     <div className="relative flex-1 max-w-sm">
                         <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />
@@ -106,6 +124,24 @@ export default function Index({ bookings, filters }: Props) {
                             </button>
                         )}
                     </div>
+
+                    {/*
+                     * Filter status; native select agar
+                     * sederhana dan aksesibel.
+                     */}
+                    <select
+                        value={status}
+                        onChange={handleStatusChange}
+                        className="h-9 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                        <option value="">Semua Status</option>
+
+                        {statusOptions.map(([value, label]) => (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
 
                     <Button type="submit">
                         <Search />

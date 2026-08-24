@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { MechanicForm } from "@/Components/Mechanics/MechanicForm";
 import { Button } from "@/Components/ui/button";
+import DashboardLayout from "@/Layouts/DashboardLayout";
 import { TMechanic } from "@/types/types";
 import { Head, Link } from "@inertiajs/react";
 
@@ -17,10 +18,22 @@ export default function Edit({ mechanic }: Props) {
     };
 
     return (
-        <div>
+        <DashboardLayout
+            breadcrumbs={[
+                {
+                    label: "Mekanik",
+                    href: route("mechanics.index"),
+                },
+                {
+                    label: mechanic.name,
+                    href: route("mechanics.show", mechanic.id),
+                },
+                { label: "Edit" },
+            ]}
+        >
             <Head title={`Edit ${mechanic.name}`} />
 
-            <div className="space-y-6 mx-auto p-6 max-w-3xl">
+            <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon">
                         <Link href={route("mechanics.index")}>
@@ -30,11 +43,11 @@ export default function Edit({ mechanic }: Props) {
 
                     <div>
                         <h1 className="font-semibold text-2xl tracking-tight">
-                            Edit Service Type
+                            Edit Mekanik
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Update service information.
+                            Perbarui informasi mekanik.
                         </p>
                     </div>
                 </div>
@@ -48,6 +61,6 @@ export default function Edit({ mechanic }: Props) {
                     />
                 </div>
             </div>
-        </div>
+        </DashboardLayout>
     );
 }

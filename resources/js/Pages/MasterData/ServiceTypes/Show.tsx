@@ -2,6 +2,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 
 import { ServiceTypeStatusBadge } from "@/Components/ServiceTypes/ServiceTypeStatusBadge";
 import { Button } from "@/Components/ui/button";
+import DashboardLayout from "@/Layouts/DashboardLayout";
 import { formatCurrency } from "@/lib/utils";
 import { TServiceType } from "@/types/types";
 import { Head, Link } from "@inertiajs/react";
@@ -12,10 +13,18 @@ interface Props {
 
 export default function Show({ serviceType }: Props) {
     return (
-        <div>
+        <DashboardLayout
+            breadcrumbs={[
+                {
+                    label: "Jenis Layanan",
+                    href: route("service-types.index"),
+                },
+                { label: serviceType.name },
+            ]}
+        >
             <Head title={serviceType.name} />
 
-            <div className="space-y-6 mx-auto p-6 max-w-3xl">
+            <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <Link href={route("service-types.index")}>
@@ -114,6 +123,6 @@ export default function Show({ serviceType }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
+        </DashboardLayout>
     );
 }

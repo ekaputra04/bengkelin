@@ -1,15 +1,9 @@
 "use client";
 
-import { MoreHorizontal, Play, SquareCheck } from "lucide-react";
+import { Play, SquareCheck } from "lucide-react";
 
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu";
 import { TWorkOrder } from "@/types/types";
 import { createColumnHelper } from "@tanstack/react-table";
 import { router } from "@inertiajs/react";
@@ -30,6 +24,8 @@ const statusLabels: Record<string, string> = {
     expired: "Kedaluwarsa",
     no_show: "Tidak Datang",
 };
+
+export { statusLabels };
 
 function StatusBadge({ status }: { status: string }) {
     if (status === "completed") {
@@ -109,6 +105,11 @@ export const WorkOrderColumns = columnHelper.columns([
         cell: ({ row }) => {
             const booking = row.original;
 
+            /*
+             * Transisi status mengikuti enum BookingStatus:
+             * terjadwal -> dikerjakan -> selesai. Status lain
+             * (menunggu DP, dibatalkan, dll.) tidak punya aksi.
+             */
             const nextAction =
                 booking.status === "confirmed"
                     ? {
@@ -133,38 +134,21 @@ export const WorkOrderColumns = columnHelper.columns([
             }
 
             return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger>
-                        <Button
-                            variant="ghost"
-                            className="p-0 w-8 h-8"
-                        >
-                            <MoreHorizontal />
-                            <span className="sr-only">
-                                Open menu
-                            </span>
-                        </Button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                            onClick={() =>
-                                router.patch(
-                                    route(
-                                        "work-orders.update",
-                                        booking.id,
-                                    ),
-                                    {
-                                        status: nextAction.status,
-                                    },
-                                )
-                            }
-                        >
-                            {nextAction.icon}{" "}
-                            {nextAction.label}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                        router.patch(
+                            route("work-orders.update", booking.id),
+                            {
+                                status: nextAction.status,
+                            },
+                        )
+                    }
+                >
+                    {nextAction.icon}
+                    {nextAction.label}
+                </Button>
             );
         },
     }),

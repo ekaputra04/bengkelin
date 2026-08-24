@@ -2,14 +2,23 @@ import { ArrowLeft } from "lucide-react";
 
 import { ServiceTypeForm } from "@/Components/ServiceTypes/ServiceTypeForm";
 import { Button } from "@/Components/ui/button";
+import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, Link } from "@inertiajs/react";
 
 export default function Create() {
     return (
-        <div>
+        <DashboardLayout
+            breadcrumbs={[
+                {
+                    label: "Jenis Layanan",
+                    href: route("service-types.index"),
+                },
+                { label: "Tambah" },
+            ]}
+        >
             <Head title="Tambah Jenis Layanan" />
 
-            <div className="space-y-6 mx-auto p-6 max-w-3xl">
+            <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex items-center gap-4">
                     <Link href={route("service-types.index")}>
                         <Button variant="ghost" size="icon">
@@ -36,6 +45,6 @@ export default function Create() {
                     />
                 </div>
             </div>
-        </div>
+        </DashboardLayout>
     );
 }

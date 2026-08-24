@@ -45,6 +45,13 @@ export type TWorkOrder = TBooking & {
     mechanic: { id: number; name: string };
 };
 
+export type TCustomerBooking = TBooking & {
+    vehicle: TVehicle;
+    service_type: TServiceType;
+    mechanic?: { id: number; name: string } | null;
+    payment?: { id: number; status: string } | null;
+};
+
 export type TBookingRequest = {
     id: number;
     requested_start_at: string;

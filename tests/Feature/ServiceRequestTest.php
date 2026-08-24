@@ -7,6 +7,7 @@ use App\Models\ServiceType;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Http;
 
 function submitServiceRequest(User $user, array $payload)
 {
@@ -14,6 +15,20 @@ function submitServiceRequest(User $user, array $payload)
         route('service-requests.store'),
         $payload
     );
+}
+
+/*
+ * Mencegah panggilan sungguhan ke API Xendit saat test.
+ */
+function fakeXenditInvoice(): void
+{
+    Http::fake([
+        'api.xendit.co/*' => Http::response([
+            'id' => 'inv-fake-123',
+            'invoice_url' => 'https://checkout.xendit.co/web/inv-fake-123',
+            'status' => 'PENDING',
+        ]),
+    ]);
 }
 
 function serviceRequestPayload(array $overrides = []): array
@@ -38,13 +53,19 @@ function serviceRequestPayload(array $overrides = []): array
 }
 
 it('mengubah pengajuan servis menjadi order saat mekanik tersedia', function () {
+    fakeXenditInvoice();
+
     Mechanic::create(['name' => 'Budi', 'phone' => '081234567890', 'is_active' => true]);
 
     $user = User::factory()->create();
     $payload = serviceRequestPayload();
 
+    /*
+     * Order pending_payment langsung diarahkan ke
+     * link pembayaran DP di Xendit.
+     */
     submitServiceRequest($user, $payload)->assertRedirect(
-        route('service-requests.index')
+        'https://checkout.xendit.co/web/inv-fake-123'
     );
 
     // Kendaraan baru otomatis terdaftar.
@@ -63,9 +84,28 @@ it('mengubah pengajuan servis menjadi order saat mekanik tersedia', function () 
     expect($booking->booking_request_id)->toBe($bookingRequest->id);
     expect($booking->user_id)->toBe($user->id);
     expect((float) $booking->remaining_amount)->toBe(100000.0);
+
+    // Invoice DP dibuat di Xendit dan disimpan sebagai payment.
+    expect($booking->payment)->not->toBeNull();
+    expect($booking->payment->status->value)->toBe('pending');
+    expect($booking->payment->payment_url)->toBe(
+        'https://checkout.xendit.co/web/inv-fake-123'
+    );
+
+    /*
+     * Regresi: diffInSeconds() Carbon 3 mengembalikan float,
+     * Xendit menolak invoice_duration non-integer (400).
+     */
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), 'api.xendit.co')
+            && is_int($request['invoice_duration'])
+            && $request['amount'] === 50000;
+    });
 });
 
 it('masuk antrean tanpa order ketika semua mekanik bentrok di waktu yang sama', function () {
+    fakeXenditInvoice();
+
     Mechanic::create(['name' => 'Budi', 'phone' => '081234567890', 'is_active' => true]);
 
     $startAt = Date::tomorrow()->setTime(9, 0);

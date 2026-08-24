@@ -74,7 +74,7 @@ export default function Index({ serviceTypes, filters }: Props) {
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout breadcrumbs={[{ label: "Jenis Layanan" }]}>
             <Head title="Jenis Layanan" />
 
             <div className="space-y-6">

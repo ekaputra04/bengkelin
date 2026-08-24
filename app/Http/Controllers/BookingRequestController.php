@@ -8,7 +8,7 @@ use App\Models\BookingRequest;
 use App\Models\ServiceType;
 use App\Models\Vehicle;
 use App\Services\Booking\ProcessBookingRequest;
-use Illuminate\Http\RedirectResponse;
+use App\Services\Xendit\XenditService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -60,7 +60,7 @@ class BookingRequestController extends Controller
     public function store(
         StoreBookingRequestRequest $request,
         ProcessBookingRequest $processBookingRequest
-    ): RedirectResponse {
+    ) {
         $data = $request->validated();
 
         /*
@@ -113,9 +113,28 @@ class BookingRequestController extends Controller
             );
         }
 
-        return to_route('service-requests.index')->with(
+        /*
+         * Langsung arahkan customer ke halaman pembayaran
+         * DP di Xendit. Kalau pembuatan invoice gagal,
+         * order tetap tersimpan dan DP bisa dibayar
+         * belakangan dari daftar pesanan.
+         */
+        try {
+            $payment = XenditService::createInvoice($booking);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return to_route('service-requests.index')->with(
+                'success',
+                "Order {$booking->booking_code} berhasil dibuat. Lanjutkan pembayaran DP dari daftar pesanan Anda."
+            );
+        }
+
+        session()->flash(
             'success',
-            "Order {$booking->booking_code} berhasil dibuat. Silakan lanjutkan pembayaran DP untuk mengunci jadwal."
+            "Order {$booking->booking_code} dibuat. Silakan selesaikan pembayaran DP untuk mengunci jadwal."
         );
+
+        return Inertia::location($payment->payment_url);
     }
 }

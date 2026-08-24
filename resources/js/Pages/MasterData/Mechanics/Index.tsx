@@ -72,7 +72,7 @@ export default function Index({ mechanics, filters }: Props) {
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout breadcrumbs={[{ label: "Mekanik" }]}>
             <Head title="Mekanik" />
 
             <div className="space-y-6">

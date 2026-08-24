@@ -2,8 +2,10 @@
 
 import { TBookingRequest } from "@/types/types";
 import { createColumnHelper } from "@tanstack/react-table";
+import { router } from "@inertiajs/react";
 
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { DataTableFeatures } from "../DataTable/DataTableFeatures";
 
 const columnHelper = createColumnHelper<
@@ -104,6 +106,31 @@ export const BookingRequestColumns = columnHelper.columns([
                         )}
                     </p>
                 </div>
+            );
+        },
+    }),
+
+    columnHelper.display({
+        id: "aksi",
+        header: "Aksi",
+        cell: ({ row }) => {
+            const booking = row.original.booking;
+
+            if (booking?.status !== "pending_payment") {
+                return null;
+            }
+
+            return (
+                <Button
+                    size="sm"
+                    onClick={() =>
+                        router.post(
+                            route("bookings.pay", booking.id),
+                        )
+                    }
+                >
+                    Bayar DP
+                </Button>
             );
         },
     }),

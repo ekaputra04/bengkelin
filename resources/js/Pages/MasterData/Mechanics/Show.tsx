@@ -2,6 +2,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 
 import { ServiceTypeStatusBadge } from "@/Components/ServiceTypes/ServiceTypeStatusBadge";
 import { Button } from "@/Components/ui/button";
+import DashboardLayout from "@/Layouts/DashboardLayout";
 import { TMechanic } from "@/types/types";
 import { Head, Link } from "@inertiajs/react";
 
@@ -11,13 +12,21 @@ interface Props {
 
 export default function Show({ mechanic }: Props) {
     return (
-        <div>
+        <DashboardLayout
+            breadcrumbs={[
+                {
+                    label: "Mekanik",
+                    href: route("mechanics.index"),
+                },
+                { label: mechanic.name },
+            ]}
+        >
             <Head title={mechanic.name} />
 
-            <div className="space-y-6 mx-auto p-6 max-w-3xl">
+            <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <Link href={route("service-types.index")}>
+                        <Link href={route("mechanics.index")}>
                             <Button variant="ghost" size="icon">
                                 <ArrowLeft />
                             </Button>
@@ -34,7 +43,7 @@ export default function Show({ mechanic }: Props) {
                         </div>
                     </div>
 
-                    <Link href={route("service-types.edit", mechanic.id)}>
+                    <Link href={route("mechanics.edit", mechanic.id)}>
                         <Button>
                             <Pencil className="mr-2 w-4 h-4" />
                             Edit
@@ -80,6 +89,6 @@ export default function Show({ mechanic }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
+        </DashboardLayout>
     );
 }

@@ -9,6 +9,7 @@ use App\Models\ServiceType;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\Date;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function createConfirmedBooking(): Booking
 {
@@ -25,7 +26,7 @@ function createConfirmedBooking(): Booking
 
     $vehicle = Vehicle::create([
         'user_id' => $user->id,
-        'license_plate' => 'B1111AAA',
+        'license_plate' => 'B1111'.strtoupper(substr(uniqid(), -4)),
         'brand' => 'Honda',
         'model' => 'Vario',
         'vehicle_type' => 'motorcycle',
@@ -113,4 +114,32 @@ it('menolak akses non-admin', function () {
         ->assertForbidden();
 
     expect($booking->fresh()->status)->toBe(BookingStatus::CONFIRMED);
+});
+
+it('memfilter daftar order berdasarkan status', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $confirmed = createConfirmedBooking();
+
+    $inProgress = createConfirmedBooking();
+    $inProgress->update(['status' => BookingStatus::IN_PROGRESS]);
+
+    $this->actingAs($admin)
+        ->get(route('work-orders.index', ['status' => 'confirmed']))
+        ->assertInertia(
+            fn (Assert $inertia) => $inertia
+                ->component('WorkOrders/Index')
+                ->where('filters.status', 'confirmed')
+                ->has('bookings.data', 1)
+                ->where('bookings.data.0.id', $confirmed->id)
+        );
+
+    // Status tidak dikenal diabaikan: semua order tetap tampil.
+    $this->actingAs($admin)
+        ->get(route('work-orders.index', ['status' => 'ngawur']))
+        ->assertInertia(
+            fn (Assert $inertia) => $inertia
+                ->where('filters.status', null)
+                ->has('bookings.data', 2)
+        );
 });

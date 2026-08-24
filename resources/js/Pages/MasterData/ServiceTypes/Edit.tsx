@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { ServiceTypeForm } from "@/Components/ServiceTypes/ServiceTypeForm";
 import { Button } from "@/Components/ui/button";
+import DashboardLayout from "@/Layouts/DashboardLayout";
 import { TServiceType } from "@/types/types";
 import { Head, Link } from "@inertiajs/react";
 
@@ -20,10 +21,22 @@ export default function Edit({ serviceType }: Props) {
     };
 
     return (
-        <div>
+        <DashboardLayout
+            breadcrumbs={[
+                {
+                    label: "Jenis Layanan",
+                    href: route("service-types.index"),
+                },
+                {
+                    label: serviceType.name,
+                    href: route("service-types.show", serviceType.id),
+                },
+                { label: "Edit" },
+            ]}
+        >
             <Head title={`Edit ${serviceType.name}`} />
 
-            <div className="space-y-6 mx-auto p-6 max-w-3xl">
+            <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon">
                         <Link href={route("service-types.index")}>
@@ -54,6 +67,6 @@ export default function Edit({ serviceType }: Props) {
                     />
                 </div>
             </div>
-        </div>
+        </DashboardLayout>
     );
 }
