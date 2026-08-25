@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\WorkProgressController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,11 +23,22 @@ Route::get('/', function () {
     ]);
 });
 
-Route::prefix('admin')->group(function () {
-    Route::prefix('dashboard')
-        ->middleware(['auth', 'verified'])
-        ->group(function () {
-            Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+Route::get('/work-progress', function () {
+    return Inertia::render('WorkProgress/Index', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
+});
+
+Route::prefix('admin')
+    ->middleware(['auth', 'verified', 'role:admin'])
+    ->group(function () {
+        Route::prefix('dashboard')->group(function () {
+
+            Route::get('/', [AdminDashboardController::class, 'index'])
+                ->name('dashboard.admin');
 
             Route::resource('service-types', ServiceTypeController::class);
 
@@ -53,13 +65,19 @@ Route::prefix('admin')->group(function () {
                 'work-orders/{booking}/paid',
                 [BookingController::class, 'markPaid']
             )->name('work-orders.paid');
-        });
-});
 
-Route::prefix('customer')->group(function () {
-    Route::prefix('dashboard')
-        ->middleware(['auth', 'verified'])
-        ->group(function () {
+            Route::get(
+                'work-progress',
+                [WorkProgressController::class, 'index']
+            )->name('work-progress.index');
+        });
+    });
+
+
+Route::prefix('customer')
+    ->middleware(['auth', 'verified', 'role:customer'])
+    ->group(function () {
+        Route::prefix('dashboard')->group(function () {
             Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
             Route::resource('service-requests', BookingRequestController::class)
@@ -68,7 +86,7 @@ Route::prefix('customer')->group(function () {
             Route::resource('vehicles', VehicleController::class)
                 ->only(['index', 'show']);
         });
-});
+    });
 
 
 /*

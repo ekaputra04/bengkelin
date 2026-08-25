@@ -1,27 +1,19 @@
 "use client";
 
-import {
-    Banknote,
-    ChevronDown,
-    Play,
-    SquareCheck,
-    UserX,
-} from "lucide-react";
+import { Banknote, ChevronDown, Play, SquareCheck, UserX } from 'lucide-react';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu";
-import { formatDateTime } from "@/lib/utils";
-import { TWorkOrder } from "@/types/types";
-import { router } from "@inertiajs/react";
-import { createColumnHelper } from "@tanstack/react-table";
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from '@/Components/ui/dropdown-menu';
+import { formatDateTime } from '@/lib/utils';
+import { TWorkOrder } from '@/types/types';
+import { router } from '@inertiajs/react';
+import { createColumnHelper } from '@tanstack/react-table';
 
-import { DataTableFeatures } from "../DataTable/DataTableFeatures";
+import BookingStatusBadge from '../Bookings/BookingStatusBadge';
+import { DataTableFeatures } from '../DataTable/DataTableFeatures';
 
 const columnHelper = createColumnHelper<DataTableFeatures, TWorkOrder>();
 
@@ -61,7 +53,11 @@ function StatusBadge({ status }: { status: string }) {
 
 function PaymentBadge({ booking }: { booking: TWorkOrder }) {
     if (booking.paid_at) {
-        return <Badge variant="outline" className="text-green-600">Lunas</Badge>;
+        return (
+            <Badge variant="outline" className="text-green-600">
+                Lunas
+            </Badge>
+        );
     }
 
     const dpPaid = booking.payment?.status === "paid";
@@ -74,30 +70,47 @@ function PaymentBadge({ booking }: { booking: TWorkOrder }) {
 }
 
 function ActionsCell({ booking }: { booking: TWorkOrder }) {
-    const actions: { label: string; icon: React.ReactNode; onClick: () => void; destructive?: boolean }[] = [];
+    const actions: {
+        label: string;
+        icon: React.ReactNode;
+        onClick: () => void;
+        destructive?: boolean;
+    }[] = [];
 
     if (booking.status === "confirmed") {
         actions.push({
             label: "Mulai Pengerjaan",
             icon: <Play className="w-4 h-4" />,
-            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "in_progress" }),
+            onClick: () =>
+                router.patch(route("work-orders.update", booking.id), {
+                    status: "in_progress",
+                }),
         });
         actions.push({
             label: "Tidak Datang",
             icon: <UserX className="w-4 h-4" />,
-            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "no_show" }),
+            onClick: () =>
+                router.patch(route("work-orders.update", booking.id), {
+                    status: "no_show",
+                }),
             destructive: true,
         });
     } else if (booking.status === "in_progress") {
         actions.push({
             label: "Selesaikan",
             icon: <SquareCheck className="w-4 h-4" />,
-            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "completed" }),
+            onClick: () =>
+                router.patch(route("work-orders.update", booking.id), {
+                    status: "completed",
+                }),
         });
         actions.push({
             label: "Tidak Datang",
             icon: <UserX className="w-4 h-4" />,
-            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "no_show" }),
+            onClick: () =>
+                router.patch(route("work-orders.update", booking.id), {
+                    status: "no_show",
+                }),
             destructive: true,
         });
     }
@@ -169,8 +182,7 @@ export const WorkOrderColumns = columnHelper.columns([
             <div className="space-y-0.5">
                 <p>{row.original.user.name}</p>
                 <p className="text-muted-foreground text-xs">
-                    {row.original.vehicle.brand}{" "}
-                    {row.original.vehicle.model} —{" "}
+                    {row.original.vehicle.brand} {row.original.vehicle.model} —{" "}
                     {row.original.vehicle.license_plate}
                 </p>
             </div>
@@ -189,13 +201,12 @@ export const WorkOrderColumns = columnHelper.columns([
 
     columnHelper.accessor("start_at", {
         header: "Jadwal",
-        cell: (info) =>
-            formatDateTime(new Date(info.getValue())),
+        cell: (info) => formatDateTime(new Date(info.getValue())),
     }),
 
     columnHelper.accessor("status", {
         header: "Status",
-        cell: (info) => <StatusBadge status={info.getValue()} />,
+        cell: (info) => <BookingStatusBadge status={info.getValue()} />,
     }),
 
     columnHelper.display({

@@ -60,6 +60,10 @@ const adminNavGroups = [
                 title: "Pengerjaan Bengkel",
                 url: "/admin/dashboard/work-orders",
             },
+            {
+                title: "Progres Harian",
+                url: "/admin/dashboard/work-progress",
+            },
         ],
     },
 ];

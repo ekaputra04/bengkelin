@@ -1,23 +1,14 @@
-import { Fragment, PropsWithChildren, useEffect } from "react";
+import { Fragment, PropsWithChildren, useEffect } from 'react';
 
-import { AppSidebar } from "@/Components/AppSidebar";
+import { AppSidebar } from '@/Components/AppSidebar';
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/Components/ui/breadcrumb";
-import { Separator } from "@/Components/ui/separator";
-import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
-} from "@/Components/ui/sidebar";
-import { toast, Toaster } from "@/Components/ui/toast";
-import { PageProps } from "@/types";
-import { usePage } from "@inertiajs/react";
+    Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator
+} from '@/Components/ui/breadcrumb';
+import { Separator } from '@/Components/ui/separator';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/Components/ui/sidebar';
+import { toast, Toaster } from '@/Components/ui/toast';
+import { PageProps } from '@/types';
+import { usePage } from '@inertiajs/react';
 
 export interface BreadcrumbItemProp {
     label: string;
@@ -35,10 +26,7 @@ interface Props extends PropsWithChildren {
     breadcrumbs?: BreadcrumbItemProp[];
 }
 
-export default function DashboardLayout({
-    children,
-    breadcrumbs = [],
-}: Props) {
+export default function DashboardLayout({ children, breadcrumbs = [] }: Props) {
     const { flash } = usePage<PageProps & FlashProps>().props;
 
     useEffect(() => {
@@ -63,7 +51,7 @@ export default function DashboardLayout({
      * aktif (bukan link).
      */
     const crumbs: BreadcrumbItemProp[] = [
-        { label: "Dashboard", href: "/dashboard" },
+        { label: "Dashboard", href: "#" },
         ...breadcrumbs,
     ];
 
@@ -80,8 +68,7 @@ export default function DashboardLayout({
                     <Breadcrumb>
                         <BreadcrumbList>
                             {crumbs.map((crumb, index) => {
-                                const isLast =
-                                    index === crumbs.length - 1;
+                                const isLast = index === crumbs.length - 1;
 
                                 return (
                                     <Fragment key={crumb.label}>

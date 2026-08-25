@@ -13,12 +13,6 @@ export function formatCurrency(value: number) {
     }).format(value);
 }
 
-/**
- * Parse datetime string as local time (strip Z/UTC offset).
- * Backend stores WIB, but Carbon may append Z. JavaScript would
- * interpret Z as UTC and shift the time. Stripping Z makes JS
- * treat the string as local time = same as what user input.
- */
 export function parseLocalDateTime(value: string): Date {
     return new Date(value.replace(/Z$/i, "").replace(/\+\d{2}:\d{2}$/, ""));
 }
@@ -42,4 +36,26 @@ export function formatLocalDate(date?: Date): string {
     const d = date ?? new Date();
 
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function formatDuration(start: string, end: string): string {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const minutes = Math.round(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60),
+    );
+
+    if (minutes < 60) {
+        return `${minutes} menit`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (remainingMinutes === 0) {
+        return `${hours} jam`;
+    }
+
+    return `${hours} jam ${remainingMinutes} menit`;
 }
