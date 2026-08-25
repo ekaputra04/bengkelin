@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 
-import { BookingRequestColumns } from "@/Components/ServiceRequests/BookingRequestColumns";
 import { DataTable } from "@/Components/DataTable/DataTable";
+import { BookingRequestColumns } from "@/Components/ServiceRequests/BookingRequestColumns";
 import { Button } from "@/Components/ui/button";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { TBookingRequest } from "@/types/types";
@@ -41,8 +41,8 @@ export default function Index({ bookingRequests }: Props) {
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Riwayat pengajuan servis dan pesanan
-                            yang dihasilkan.
+                            Riwayat pengajuan servis dan pesanan yang
+                            dihasilkan.
                         </p>
                     </div>
 

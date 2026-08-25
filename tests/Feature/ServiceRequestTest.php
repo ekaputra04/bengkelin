@@ -1,8 +1,8 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\BookingRequest;
-use App\Models\Mechanic;
 use App\Models\ServiceType;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -52,10 +52,21 @@ function serviceRequestPayload(array $overrides = []): array
     ], $overrides);
 }
 
+function createMechanicUser(): User
+{
+    return User::create([
+        'name' => 'Budi Santoso',
+        'email' => 'budi@bengkelin.test',
+        'password' => bcrypt('password'),
+        'role' => UserRole::MECHANIC,
+        'is_active' => true,
+    ]);
+}
+
 it('mengubah pengajuan servis menjadi order saat mekanik tersedia', function () {
     fakeXenditInvoice();
 
-    Mechanic::create(['name' => 'Budi', 'phone' => '081234567890', 'is_active' => true]);
+    createMechanicUser();
 
     $user = User::factory()->create();
     $payload = serviceRequestPayload();
@@ -76,7 +87,7 @@ it('mengubah pengajuan servis menjadi order saat mekanik tersedia', function () 
     $bookingRequest = BookingRequest::first();
 
     expect($bookingRequest->status->value)->toBe('converted');
-    expect($bookingRequest->mechanic_id)->not->toBeNull();
+    expect($bookingRequest->mechanic_user_id)->not->toBeNull();
 
     $booking = Booking::first();
 
@@ -106,7 +117,7 @@ it('mengubah pengajuan servis menjadi order saat mekanik tersedia', function () 
 it('masuk antrean tanpa order ketika semua mekanik bentrok di waktu yang sama', function () {
     fakeXenditInvoice();
 
-    Mechanic::create(['name' => 'Budi', 'phone' => '081234567890', 'is_active' => true]);
+    createMechanicUser();
 
     $startAt = Date::tomorrow()->setTime(9, 0);
 

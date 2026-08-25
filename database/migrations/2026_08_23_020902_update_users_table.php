@@ -17,6 +17,8 @@ return new class extends Migration
                 UserRole::cases(),
                 'value'
             ))->default(UserRole::CUSTOMER->value);
+            $table->boolean('is_active')->default(true);
+
             $table->index('role');
         });
     }
@@ -27,8 +29,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
             $table->dropColumn('role');
+            $table->dropColumn('is_active');
+            $table->dropIndex(['role']);
+            $table->dropIndex(['is_active']);
         });
     }
 };

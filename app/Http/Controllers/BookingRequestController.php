@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BookingRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Requests\StoreBookingRequestRequest;
 use App\Models\BookingRequest;
 use App\Models\ServiceType;
@@ -21,12 +22,26 @@ class BookingRequestController extends Controller
      */
     public function index(Request $request): Response
     {
-        $bookingRequests = BookingRequest::query()
-            ->where('user_id', $request->user()->id)
-            ->with(['vehicle', 'serviceType', 'booking'])
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $user = $request->user();
+        $bookingRequests = null;
+        $withRelations = ['vehicle', 'serviceType', 'booking', 'user'];
+
+
+        if ($user->role == UserRole::ADMIN) {
+            $bookingRequests = BookingRequest::query()
+                ->with($withRelations)
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
+        }
+        if ($user->role == UserRole::CUSTOMER) {
+            $bookingRequests = BookingRequest::query()
+                ->where('user_id', $request->user()->id)
+                ->with($withRelations)
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
+        }
 
         return Inertia::render('ServiceRequests/Index', [
             'bookingRequests' => $bookingRequests,

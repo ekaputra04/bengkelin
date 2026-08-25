@@ -12,15 +12,18 @@ import {
     SidebarMenuItem,
     SidebarRail,
 } from "@/Components/ui/sidebar";
+import { TUser } from "@/types/types";
 import { Link, usePage } from "@inertiajs/react";
 
-const navGroups = [
+import { NavUser } from "./NavUser";
+
+const adminNavGroups = [
     {
         title: "Dashboard",
         items: [
             {
                 title: "Dashboard",
-                url: "/dashboard",
+                url: "/admin/dashboard",
             },
         ],
     },
@@ -29,19 +32,15 @@ const navGroups = [
         items: [
             {
                 title: "Jenis Layanan",
-                url: "/dashboard/service-types",
-            },
-            {
-                title: "Mekanik",
-                url: "/dashboard/mechanics",
+                url: "/admin/dashboard/service-types",
             },
             {
                 title: "Pengguna",
-                url: "/dashboard/users",
+                url: "/admin/dashboard/users",
             },
             {
                 title: "Kendaraan",
-                url: "/dashboard/vehicles",
+                url: "/admin/dashboard/vehicles",
             },
         ],
     },
@@ -50,7 +49,7 @@ const navGroups = [
         items: [
             {
                 title: "Pengajuan Servis",
-                url: "/dashboard/service-requests",
+                url: "/admin/dashboard/service-requests",
             },
         ],
     },
@@ -59,34 +58,83 @@ const navGroups = [
         items: [
             {
                 title: "Pengerjaan Bengkel",
-                url: "/dashboard/work-orders",
+                url: "/admin/dashboard/work-orders",
+            },
+        ],
+    },
+];
+
+const customerNavGroups = [
+    {
+        title: "Dashboard",
+        items: [
+            {
+                title: "Dashboard",
+                url: "/customer/dashboard",
+            },
+        ],
+    },
+    {
+        title: "Kendaraan Saya",
+        items: [
+            {
+                title: "Kendaraan",
+                url: "/customer/dashboard/vehicles",
+            },
+        ],
+    },
+    {
+        title: "Servis Saya",
+        items: [
+            {
+                title: "Pengajuan Servis",
+                url: "/customer/dashboard/service-requests",
             },
         ],
     },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { url } = usePage();
+    const {
+        url,
+        props: { auth },
+    } = usePage();
+
+    const user = auth.user as TUser;
+
+    const navGroups =
+        user.role === "admin" ? adminNavGroups : customerNavGroups;
 
     /*
      * Item aktif jika URL saat ini sama atau berada di
-     * bawah path-nya (mis. /dashboard/mechanics/3/edit
-     * mengaktifkan menu Mekanik). Root /dashboard hanya
+     * bawah path-nya (mis. /admin/dashboard/mechanics/3/edit
+     * mengaktifkan menu Mekanik). Root /admin/dashboard hanya
      * aktif persis di halaman dashboard.
      */
     const isActive = (itemUrl: string) =>
-        itemUrl === "/dashboard"
-            ? url === "/dashboard"
+        itemUrl === "/admin/dashboard"
+            ? url === "/admin/dashboard"
             : url === itemUrl || url.startsWith(`${itemUrl}/`);
 
     return (
         <Sidebar {...props} className="bg-background">
             <SidebarHeader className="">
-                <div className="">
-                    <h1 className="font-bold text-xl">Bengkelin</h1>
-                    <p className="text-muted-foreground text-xs">
-                        Sistem Reservasi Bengkel
-                    </p>
+                <div className="flex items-center gap-2">
+                    <div className="">
+                        <img
+                            src="/images/logo.png"
+                            alt="Logo"
+                            className="w-8 aspect-square"
+                        />
+                    </div>
+                    <div className="">
+                        <h1 className="font-bold text-primary text-xl">
+                            Bengkelin
+                        </h1>
+                        <p className="text-muted-foreground text-xs">
+                            Sistem Reservasi Bengkel
+                        </p>
+                    </div>
                 </div>
             </SidebarHeader>
             <SidebarContent>
@@ -99,9 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton
                                             isActive={isActive(item.url)}
-                                            render={
-                                                <Link href={item.url} />
-                                            }
+                                            render={<Link href={item.url} />}
                                         >
                                             {item.title}
                                         </SidebarMenuButton>
@@ -113,6 +159,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 ))}
             </SidebarContent>
             <SidebarRail />
+            <NavUser />
         </Sidebar>
     );
 }

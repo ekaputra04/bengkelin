@@ -19,7 +19,7 @@ class Booking extends Model
         'user_id',
         'vehicle_id',
         'service_type_id',
-        'mechanic_id',
+        'mechanic_user_id',
         'start_at',
         'end_at',
         'service_price',
@@ -31,6 +31,7 @@ class Booking extends Model
         'completed_at',
         'cancelled_at',
         'no_show_at',
+        'paid_at',
         'notes',
     ];
 
@@ -48,9 +49,9 @@ class Booking extends Model
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'no_show_at' => 'datetime',
+            'paid_at' => 'datetime',
         ];
     }
-
 
     public function bookingRequest(): BelongsTo
     {
@@ -74,7 +75,7 @@ class Booking extends Model
 
     public function mechanic(): BelongsTo
     {
-        return $this->belongsTo(Mechanic::class);
+        return $this->belongsTo(User::class, 'mechanic_user_id');
     }
 
     public function payment(): HasOne

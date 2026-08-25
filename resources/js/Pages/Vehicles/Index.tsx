@@ -1,17 +1,13 @@
-import { Plus, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { DataTable } from "@/Components/DataTable/DataTable";
-import DialogTemplate from "@/Components/DialogTemplate";
-import { DeleteServiceTypeForm } from "@/Components/ServiceTypes/DeleteServiceTypeForm";
-import { ServiceTypeColumns } from "@/Components/ServiceTypes/ServiceTypeColumns";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { VehicleColumns } from "@/Components/Vehicles/VehicleColumns";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
-import { useServiceTypeStore } from "@/stores/use-service-type-store";
-import { TServiceType } from "@/types/types";
-import { Head, Link, router } from "@inertiajs/react";
+import { TVehicle } from "@/types/types";
+import { Head, router, usePage } from "@inertiajs/react";
 
 interface PaginationLink {
     url: string | null;
@@ -19,8 +15,8 @@ interface PaginationLink {
     active: boolean;
 }
 
-interface ServiceTypesPagination {
-    data: TServiceType[];
+interface VehiclesPagination {
+    data: TVehicle[];
     current_page: number;
     last_page: number;
     per_page: number;
@@ -31,23 +27,23 @@ interface ServiceTypesPagination {
 }
 
 interface Props {
-    serviceTypes: ServiceTypesPagination;
+    vehicles: VehiclesPagination;
     filters: {
         search: string;
     };
 }
 
-export default function Index({ serviceTypes, filters }: Props) {
+export default function Index({ vehicles, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
-
-    const { dialogType } = useIsDialogOpenStore();
-    const { selectedData } = useServiceTypeStore();
+    const { props } = usePage();
+    const user = (props as any).auth.user;
+    const isAdmin = user.role === "admin";
 
     const handleSearch = (event: FormEvent) => {
         event.preventDefault();
 
         router.get(
-            route("service-types.index"),
+            route("vehicles.index"),
             {
                 search: search || undefined,
             },
@@ -62,7 +58,7 @@ export default function Index({ serviceTypes, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("service-types.index"),
+            route("vehicles.index"),
             {},
             {
                 preserveState: true,
@@ -72,27 +68,20 @@ export default function Index({ serviceTypes, filters }: Props) {
     };
 
     return (
-        <DashboardLayout breadcrumbs={[{ label: "Jenis Layanan" }]}>
-            <Head title="Jenis Layanan" />
+        <DashboardLayout breadcrumbs={[{ label: "Kendaraan" }]}>
+            <Head title="Kendaraan" />
 
             <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="font-semibold text-2xl tracking-tight">
-                            Jenis Layanan
-                        </h1>
+                <div>
+                    <h1 className="font-semibold text-2xl tracking-tight">
+                        Kendaraan
+                    </h1>
 
-                        <p className="text-muted-foreground text-sm">
-                            Kelola jenis layanan yang tersedia di bengkel Anda.
-                        </p>
-                    </div>
-
-                    <Link href={route("service-types.create")}>
-                        <Button>
-                            <Plus className="mr-2 w-4 h-4" />
-                            Tambah Layanan
-                        </Button>
-                    </Link>
+                    <p className="text-muted-foreground text-sm">
+                        {isAdmin
+                            ? "Daftar seluruh kendaraan yang terdaftar di bengkel."
+                            : "Daftar kendaraan milik Anda."}
+                    </p>
                 </div>
 
                 <form
@@ -105,7 +94,7 @@ export default function Index({ serviceTypes, filters }: Props) {
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Cari layanan..."
+                            placeholder="Cari plat nomor, merek, atau model..."
                             className="pr-10 pl-9"
                         />
 
@@ -127,21 +116,13 @@ export default function Index({ serviceTypes, filters }: Props) {
                 </form>
 
                 <DataTable
-                    columns={ServiceTypeColumns}
-                    data={serviceTypes.data}
-                    prevPageUrl={serviceTypes.prev_page_url}
-                    nextPageUrl={serviceTypes.next_page_url}
-                    total={serviceTypes.total}
+                    columns={VehicleColumns}
+                    data={vehicles.data}
+                    prevPageUrl={vehicles.prev_page_url}
+                    nextPageUrl={vehicles.next_page_url}
+                    total={vehicles.total}
                 />
             </div>
-            {dialogType == "delete" && selectedData && (
-                <DialogTemplate
-                    title="Hapus Layanan"
-                    description="Anda yakin ingin menghapus layanan ini?"
-                >
-                    <DeleteServiceTypeForm serviceType={selectedData} />
-                </DialogTemplate>
-            )}
         </DashboardLayout>
     );
 }

@@ -43,7 +43,7 @@ export function DeleteServiceTypeForm({ serviceType }: Props) {
                 ) : (
                     <>
                         <Trash />
-                        Hapus Mekanik
+                        Hapus Layanan
                     </>
                 )}
             </Button>

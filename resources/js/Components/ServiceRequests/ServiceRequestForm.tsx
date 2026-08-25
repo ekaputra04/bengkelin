@@ -17,6 +17,7 @@ import { TServiceType, TVehicle } from "@/types/types";
 import { useForm } from "@inertiajs/react";
 
 import { Spinner } from "../ui/spinner";
+import { formatLocalDate } from "@/lib/utils";
 
 interface ServiceRequestFormProps {
     vehicles: TVehicle[];
@@ -358,7 +359,7 @@ export function ServiceRequestForm({
                     <Input
                         id="date"
                         type="date"
-                        min={new Date().toISOString().slice(0, 10)}
+                        min={formatLocalDate()}
                         value={form.data.date}
                         onChange={(event) =>
                             form.setData("date", event.target.value)

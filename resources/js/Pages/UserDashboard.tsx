@@ -10,6 +10,7 @@ import {
     TableRow,
 } from "@/Components/ui/table";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { parseLocalDateTime } from "@/lib/utils";
 import { TCustomerBooking, TVehicle } from "@/types/types";
 import { Head, Link, usePage } from "@inertiajs/react";
 
@@ -31,14 +32,14 @@ const bookingStatuses: Record<string, string> = {
 };
 
 const fmtDate = (value: string) =>
-    new Date(value).toLocaleDateString("en-GB", {
+    parseLocalDateTime(value).toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",
         year: "numeric",
     });
 
 const fmtTime = (value: string) =>
-    new Date(value).toLocaleTimeString("id-ID", {
+    parseLocalDateTime(value).toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
     });

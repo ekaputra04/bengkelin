@@ -1,17 +1,15 @@
 "use client";
 
+import { formatCurrency, parseLocalDateTime } from "@/lib/utils";
 import { TBookingRequest } from "@/types/types";
-import { createColumnHelper } from "@tanstack/react-table";
 import { router } from "@inertiajs/react";
+import { createColumnHelper } from "@tanstack/react-table";
 
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
 import { DataTableFeatures } from "../DataTable/DataTableFeatures";
+import { Button } from "../ui/button";
+import BookingRequestStatusBadge from "./ServiceRequestStatusBadge";
 
-const columnHelper = createColumnHelper<
-    DataTableFeatures,
-    TBookingRequest
->();
+const columnHelper = createColumnHelper<DataTableFeatures, TBookingRequest>();
 
 const requestStatusLabels: Record<string, string> = {
     waiting: "Menunggu Slot",
@@ -26,23 +24,53 @@ export const BookingRequestColumns = columnHelper.columns([
         id: "vehicle",
         header: "Kendaraan",
         cell: ({ row }) => (
-            <span>
-                {row.original.vehicle.brand}{" "}
-                {row.original.vehicle.model} —{" "}
-                {row.original.vehicle.license_plate}
-            </span>
+            <div className="">
+                <span>
+                    {row.original.vehicle.brand}{" "}
+                    {row.original.vehicle.model}{" "}
+                </span>
+                <p className="text-muted-foreground text-sm">
+                    {row.original.vehicle.license_plate}
+                </p>
+            </div>
         ),
+    }),
+
+    columnHelper.accessor((row) => row.user?.name, {
+        id: "user_name",
+        header: "Nama Pelanggan",
+        cell: ({ row }) => {
+            return (
+                <div className="">
+                    <p>{row.original.user?.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                        {row.original.user?.email}
+                    </p>
+                </div>
+            );
+        },
     }),
 
     columnHelper.accessor((row) => row.service_type.name, {
         id: "service_type",
         header: "Layanan",
+        cell: ({ row }) => {
+            return (
+                <div className="">
+                    <p>{row.original.service_type.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                        {formatCurrency(row.original.service_type.price)} -{" "}
+                        {row.original.service_type.duration_minutes} Menit
+                    </p>
+                </div>
+            );
+        },
     }),
 
     columnHelper.accessor("requested_start_at", {
         header: "Waktu Diajukan",
         cell: (info) =>
-            new Date(info.getValue()).toLocaleString("id-ID", {
+            parseLocalDateTime(info.getValue()).toLocaleString("id-ID", {
                 dateStyle: "medium",
                 timeStyle: "short",
             }),
@@ -50,32 +78,8 @@ export const BookingRequestColumns = columnHelper.columns([
 
     columnHelper.accessor("status", {
         header: "Status",
-        cell: (info) => {
-            const status = info.getValue();
-
-            if (
-                status === "converted" &&
-                info.row.original.booking
-            ) {
-                return (
-                    <Badge variant="default">
-                        {requestStatusLabels[status]}
-                    </Badge>
-                );
-            }
-
-            return (
-                <Badge
-                    variant={
-                        status === "cancelled" ||
-                        status === "expired"
-                            ? "destructive"
-                            : "secondary"
-                    }
-                >
-                    {requestStatusLabels[status] ?? status}
-                </Badge>
-            );
+        cell: ({ row }) => {
+            return <BookingRequestStatusBadge status={row.original.status} />;
         },
     }),
 
@@ -101,9 +105,7 @@ export const BookingRequestColumns = columnHelper.columns([
 
                     <p className="text-muted-foreground text-xs">
                         DP Rp{" "}
-                        {Number(booking.dp_amount).toLocaleString(
-                            "id-ID",
-                        )}
+                        {Number(booking.dp_amount).toLocaleString("id-ID")}
                     </p>
                 </div>
             );
@@ -124,9 +126,7 @@ export const BookingRequestColumns = columnHelper.columns([
                 <Button
                     size="sm"
                     onClick={() =>
-                        router.post(
-                            route("bookings.pay", booking.id),
-                        )
+                        router.post(route("bookings.pay", booking.id))
                     }
                 >
                     Bayar DP

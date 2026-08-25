@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingRequestController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceTypeController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,28 +22,54 @@ Route::get('/', function () {
     ]);
 });
 
-Route::prefix('dashboard')
-    ->middleware(['auth', 'verified'])
-    ->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::prefix('admin')->group(function () {
+    Route::prefix('dashboard')
+        ->middleware(['auth', 'verified'])
+        ->group(function () {
+            Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        Route::resource('service-types', ServiceTypeController::class);
+            Route::resource('service-types', ServiceTypeController::class);
 
-        Route::resource('mechanics', MechanicController::class);
+            Route::resource('users', UserController::class)
+                ->only(['index', 'show', 'update']);
 
-        Route::resource('service-requests', BookingRequestController::class)
-            ->only(['index', 'create', 'store']);
+            Route::resource('vehicles', VehicleController::class)
+                ->only(['index', 'show']);
 
-        Route::get(
-            'work-orders',
-            [BookingController::class, 'index']
-        )->name('work-orders.index');
+            Route::resource('service-requests', BookingRequestController::class)
+                ->only(['index', 'create', 'store']);
 
-        Route::patch(
-            'work-orders/{booking}',
-            [BookingController::class, 'update']
-        )->name('work-orders.update');
-    });
+            Route::get(
+                'work-orders',
+                [BookingController::class, 'index']
+            )->name('work-orders.index');
+
+            Route::patch(
+                'work-orders/{booking}',
+                [BookingController::class, 'update']
+            )->name('work-orders.update');
+
+            Route::patch(
+                'work-orders/{booking}/paid',
+                [BookingController::class, 'markPaid']
+            )->name('work-orders.paid');
+        });
+});
+
+Route::prefix('customer')->group(function () {
+    Route::prefix('dashboard')
+        ->middleware(['auth', 'verified'])
+        ->group(function () {
+            Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+            Route::resource('service-requests', BookingRequestController::class)
+                ->only(['index', 'create', 'store']);
+
+            Route::resource('vehicles', VehicleController::class)
+                ->only(['index', 'show']);
+        });
+});
+
 
 /*
  * Webhook Xendit: tanpa auth & CSRF karena dipanggil
@@ -62,4 +90,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

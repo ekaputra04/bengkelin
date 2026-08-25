@@ -2,9 +2,9 @@
 
 use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\BookingRequest;
-use App\Models\Mechanic;
 use App\Models\ServiceType;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -15,14 +15,16 @@ function createConfirmedBooking(): Booking
 {
     $user = User::factory()->create();
 
-    $serviceType = ServiceType::create([
-        'name' => 'Servis Rutin',
-        'description' => null,
-        'duration_minutes' => 60,
-        'price' => 200000,
-        'dp_amount' => 50000,
-        'is_active' => true,
-    ]);
+    $serviceType = ServiceType::firstOrCreate(
+        ['name' => 'Servis Rutin'],
+        [
+            'description' => null,
+            'duration_minutes' => 60,
+            'price' => 200000,
+            'dp_amount' => 50000,
+            'is_active' => true,
+        ],
+    );
 
     $vehicle = Vehicle::create([
         'user_id' => $user->id,
@@ -40,17 +42,23 @@ function createConfirmedBooking(): Booking
         'status' => BookingRequestStatus::CONVERTED,
     ]);
 
+    $mechanic = User::firstOrCreate(
+        ['email' => 'budi-workorder@bengkelin.test'],
+        [
+            'name' => 'Budi Santoso',
+            'password' => bcrypt('password'),
+            'role' => UserRole::MECHANIC,
+            'is_active' => true,
+        ],
+    );
+
     return Booking::create([
         'booking_code' => 'BK-TEST-'.uniqid(),
         'booking_request_id' => $bookingRequest->id,
         'user_id' => $user->id,
         'vehicle_id' => $vehicle->id,
         'service_type_id' => $serviceType->id,
-        'mechanic_id' => Mechanic::create([
-            'name' => 'Budi',
-            'phone' => '081234567890',
-            'is_active' => true,
-        ])->id,
+        'mechanic_user_id' => $mechanic->id,
         'start_at' => Date::tomorrow()->setTime(9, 0),
         'end_at' => Date::tomorrow()->setTime(10, 0),
         'service_price' => 200000,
@@ -84,6 +92,57 @@ it('admin memajukan status pengerjaan dari terjadwal sampai selesai', function (
     expect($booking->completed_at)->not->toBeNull();
 });
 
+it('menandai konsumen tidak datang dari status terjadwal', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $booking = createConfirmedBooking();
+
+    $this->actingAs($admin)
+        ->patch(route('work-orders.update', $booking), [
+            'status' => 'no_show',
+        ])
+        ->assertRedirect();
+
+    $booking = $booking->fresh();
+
+    expect($booking->status)->toBe(BookingStatus::NO_SHOW);
+    expect($booking->no_show_at)->not->toBeNull();
+});
+
+it('menandai konsumen tidak datang dari status dikerjakan', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $booking = createConfirmedBooking();
+    $booking->update(['status' => BookingStatus::IN_PROGRESS]);
+
+    $this->actingAs($admin)
+        ->patch(route('work-orders.update', $booking), [
+            'status' => 'no_show',
+        ])
+        ->assertRedirect();
+
+    $booking = $booking->fresh();
+
+    expect($booking->status)->toBe(BookingStatus::NO_SHOW);
+    expect($booking->no_show_at)->not->toBeNull();
+});
+
+it('menolak no_show dari status yang tidak valid', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $booking = createConfirmedBooking();
+
+    $this->actingAs($admin)
+        ->patch(route('work-orders.update', $booking), [
+            'status' => 'no_show',
+        ])
+        ->assertRedirect();
+
+    // Tidak bisa no_show lagi dari status no_show.
+    $this->actingAs($admin)
+        ->patch(route('work-orders.update', $booking), [
+            'status' => 'no_show',
+        ])
+        ->assertSessionHas('error');
+});
+
 it('menolak transisi status yang tidak valid', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $booking = createConfirmedBooking();
@@ -95,7 +154,6 @@ it('menolak transisi status yang tidak valid', function () {
         ])
         ->assertSessionHas('error');
 
-    // Order yang DP-nya belum dibayar tidak boleh langsung dikerjakan.
     expect($booking->fresh()->status)->toBe(BookingStatus::PENDING_PAYMENT);
 });
 
@@ -134,7 +192,6 @@ it('memfilter daftar order berdasarkan status', function () {
                 ->where('bookings.data.0.id', $confirmed->id)
         );
 
-    // Status tidak dikenal diabaikan: semua order tetap tampil.
     $this->actingAs($admin)
         ->get(route('work-orders.index', ['status' => 'ngawur']))
         ->assertInertia(
@@ -142,4 +199,38 @@ it('memfilter daftar order berdasarkan status', function () {
                 ->where('filters.status', null)
                 ->has('bookings.data', 2)
         );
+});
+
+it('admin menandai sisa pembayaran lunas', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $booking = createConfirmedBooking();
+    $booking->update(['status' => BookingStatus::COMPLETED]);
+
+    $this->actingAs($admin)
+        ->patch(route('work-orders.paid', $booking))
+        ->assertRedirect();
+
+    expect($booking->fresh()->paid_at)->not->toBeNull();
+});
+
+it('menolak double mark paid', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $booking = createConfirmedBooking();
+    $booking->update(['status' => BookingStatus::COMPLETED, 'paid_at' => now()]);
+
+    $this->actingAs($admin)
+        ->patch(route('work-orders.paid', $booking))
+        ->assertSessionHas('error');
+});
+
+it('menolak akses non-admin untuk mark paid', function () {
+    $customer = User::factory()->create(['role' => 'customer']);
+    $booking = createConfirmedBooking();
+    $booking->update(['status' => BookingStatus::COMPLETED]);
+
+    $this->actingAs($customer)
+        ->patch(route('work-orders.paid', $booking))
+        ->assertForbidden();
+
+    expect($booking->fresh()->paid_at)->toBeNull();
 });

@@ -33,6 +33,7 @@ return new class extends Migration
                 ->restrictOnDelete();
 
             $table->dateTime('requested_start_at');
+            $table->dateTime('requested_end_at')->nullable();
 
             $table->enum('status', array_column(
                 BookingRequestStatus::cases(),
@@ -48,6 +49,8 @@ return new class extends Migration
             $table->index('service_type_id');
             $table->index('mechanic_id');
             $table->index('requested_start_at');
+            $table->index('requested_end_at');
+
             $table->index('status');
         });
     }

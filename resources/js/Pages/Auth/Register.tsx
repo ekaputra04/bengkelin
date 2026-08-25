@@ -1,9 +1,12 @@
+import { LogIn } from "lucide-react";
 import { FormEventHandler } from "react";
 
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
+import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { Spinner } from "@/Components/ui/spinner";
 import GuestLayout from "@/Layouts/GuestLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 
@@ -27,9 +30,16 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
 
+            <div className="flex flex-col items-center gap-1 mb-16 text-center">
+                <h1 className="font-bold text-2xl">Daftar ke Sistem</h1>
+                <p className="text-muted-foreground text-sm text-balance">
+                    Masukkan data untuk mendaftar
+                </p>
+            </div>
+
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value="Nama" />
 
                     <Input
                         id="name"
@@ -39,6 +49,7 @@ export default function Register() {
                         autoComplete="name"
                         onChange={(e) => setData("name", e.target.value)}
                         required
+                        disabled={processing}
                     />
 
                     <InputError message={errors.name} className="mt-2" />
@@ -56,6 +67,7 @@ export default function Register() {
                         autoComplete="username"
                         onChange={(e) => setData("email", e.target.value)}
                         required
+                        disabled={processing}
                     />
 
                     <InputError message={errors.email} className="mt-2" />
@@ -73,6 +85,7 @@ export default function Register() {
                         autoComplete="new-password"
                         onChange={(e) => setData("password", e.target.value)}
                         required
+                        disabled={processing}
                     />
 
                     <InputError message={errors.password} className="mt-2" />
@@ -81,7 +94,7 @@ export default function Register() {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Konfirmasi Password"
                     />
 
                     <Input
@@ -95,6 +108,7 @@ export default function Register() {
                             setData("password_confirmation", e.target.value)
                         }
                         required
+                        disabled={processing}
                     />
 
                     <InputError
@@ -103,17 +117,32 @@ export default function Register() {
                     />
                 </div>
 
-                <div className="flex justify-end items-center mt-4">
-                    <Link
-                        href={route("login")}
-                        className="rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-gray-600 hover:text-gray-900 text-sm underline"
-                    >
-                        Already registered?
-                    </Link>
+                <Button
+                    type="submit"
+                    className="mt-4 w-full"
+                    disabled={processing}
+                >
+                    {processing ? (
+                        <>
+                            <Spinner />
+                            Proses
+                        </>
+                    ) : (
+                        <>
+                            <LogIn />
+                            Daftar
+                        </>
+                    )}
+                </Button>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
+                <div className="mt-8 text-muted-foreground text-sm">
+                    Sudah punya akun?{" "}
+                    <Link
+                        href="/login"
+                        className="underline underline-offset-4"
+                    >
+                        Masuk
+                    </Link>
                 </div>
             </form>
         </GuestLayout>

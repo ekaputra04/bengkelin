@@ -1,17 +1,13 @@
-import { Plus, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { DataTable } from "@/Components/DataTable/DataTable";
-import DialogTemplate from "@/Components/DialogTemplate";
-import { DeleteMechanicForm } from "@/Components/Mechanics/DeleteMechanicForm";
-import { MechanicColumns } from "@/Components/Mechanics/MechanicColumns";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { UserColumns } from "@/Components/Users/UserColumns";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
-import { useMechanicStore } from "@/stores/use-mechanic-store";
-import { TMechanic } from "@/types/types";
-import { Head, Link, router } from "@inertiajs/react";
+import { TUser } from "@/types/types";
+import { Head, router } from "@inertiajs/react";
 
 interface PaginationLink {
     url: string | null;
@@ -19,8 +15,8 @@ interface PaginationLink {
     active: boolean;
 }
 
-interface MechanicsPagination {
-    data: TMechanic[];
+interface UsersPagination {
+    data: TUser[];
     current_page: number;
     last_page: number;
     per_page: number;
@@ -31,23 +27,20 @@ interface MechanicsPagination {
 }
 
 interface Props {
-    mechanics: MechanicsPagination;
+    users: UsersPagination;
     filters: {
         search: string;
     };
 }
 
-export default function Index({ mechanics, filters }: Props) {
+export default function Index({ users, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
-
-    const { dialogType } = useIsDialogOpenStore();
-    const { selectedData } = useMechanicStore();
 
     const handleSearch = (event: FormEvent) => {
         event.preventDefault();
 
         router.get(
-            route("mechanics.index"),
+            route("users.index"),
             {
                 search: search || undefined,
             },
@@ -62,7 +55,7 @@ export default function Index({ mechanics, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("mechanics.index"),
+            route("users.index"),
             {},
             {
                 preserveState: true,
@@ -72,27 +65,18 @@ export default function Index({ mechanics, filters }: Props) {
     };
 
     return (
-        <DashboardLayout breadcrumbs={[{ label: "Mekanik" }]}>
-            <Head title="Mekanik" />
+        <DashboardLayout breadcrumbs={[{ label: "Pengguna" }]}>
+            <Head title="Pengguna" />
 
             <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="font-semibold text-2xl tracking-tight">
-                            Mekanik
-                        </h1>
+                <div>
+                    <h1 className="font-semibold text-2xl tracking-tight">
+                        Pengguna
+                    </h1>
 
-                        <p className="text-muted-foreground text-sm">
-                            Kelola mekanik yang bekerja di bengkel Anda.
-                        </p>
-                    </div>
-
-                    <Link href={route("mechanics.create")}>
-                        <Button>
-                            <Plus className="mr-2 w-4 h-4" />
-                            Tambah Mekanik
-                        </Button>
-                    </Link>
+                    <p className="text-muted-foreground text-sm">
+                        Kelola pengguna yang terdaftar di bengkel Anda.
+                    </p>
                 </div>
 
                 <form
@@ -105,7 +89,7 @@ export default function Index({ mechanics, filters }: Props) {
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Cari mekanik..."
+                            placeholder="Cari pengguna..."
                             className="pr-10 pl-9"
                         />
 
@@ -127,21 +111,13 @@ export default function Index({ mechanics, filters }: Props) {
                 </form>
 
                 <DataTable
-                    columns={MechanicColumns}
-                    data={mechanics.data}
-                    prevPageUrl={mechanics.prev_page_url}
-                    nextPageUrl={mechanics.next_page_url}
-                    total={mechanics.total}
+                    columns={UserColumns}
+                    data={users.data}
+                    prevPageUrl={users.prev_page_url}
+                    nextPageUrl={users.next_page_url}
+                    total={users.total}
                 />
             </div>
-            {dialogType == "delete" && selectedData && (
-                <DialogTemplate
-                    title="Hapus Layanan"
-                    description="Anda yakin ingin menghapus layanan ini?"
-                >
-                    <DeleteMechanicForm mechanic={selectedData} />
-                </DialogTemplate>
-            )}
         </DashboardLayout>
     );
 }

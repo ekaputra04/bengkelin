@@ -1,23 +1,15 @@
 "use client";
 
-import {
-    BadgeCheck,
-    Bell,
-    ChevronsUpDown,
-    CreditCard,
-    LogOut,
-    Sparkles,
-} from "lucide-react";
+import { ChevronsUpDown, LogOut, User } from "lucide-react";
 
-import { usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
@@ -27,6 +19,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "./ui/sidebar";
+import { toast } from "./ui/toast";
 
 export function NavUser() {
     const { isMobile } = useSidebar();
@@ -37,7 +30,7 @@ export function NavUser() {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu>
-                    <DropdownMenuTrigger>
+                    <DropdownMenuTrigger className="w-full">
                         <SidebarMenuButton
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -64,7 +57,7 @@ export function NavUser() {
                         align="end"
                         sideOffset={4}
                     >
-                        <DropdownMenuLabel className="p-0 font-normal">
+                        <div className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
                                 <Avatar className="rounded-lg w-8 h-8">
                                     <AvatarFallback className="rounded-lg">
@@ -80,31 +73,24 @@ export function NavUser() {
                                     </span>
                                 </div>
                             </div>
-                        </DropdownMenuLabel>
+                        </div>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
-                                <Sparkles />
-                                Upgrade to Pro
+                                <User />
+                                Profil
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <BadgeCheck />
-                                Account
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CreditCard />
-                                Billing
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Bell />
-                                Notifications
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                router.post(route("logout"));
+                                toast.add({
+                                    title: "Logout",
+                                    description: "Anda berhasil logout",
+                                });
+                            }}
+                        >
                             <LogOut />
                             Log out
                         </DropdownMenuItem>

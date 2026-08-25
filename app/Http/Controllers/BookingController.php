@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Models\Booking;
+use App\Services\Booking\RetryWaitingRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,10 +14,6 @@ use Inertia\Response;
 
 class BookingController extends Controller
 {
-    /**
-     * Modul pengerjaan bengkel: daftar order beserta
-     * status pengerjaannya (khusus admin).
-     */
     public function index(Request $request): Response
     {
         abort_unless(
@@ -26,16 +23,12 @@ class BookingController extends Controller
 
         $search = $request->string('search')->trim()->toString();
 
-        /*
-         * Filter opsional berdasarkan status booking;
-         * nilai tidak dikenal diabaikan.
-         */
         $status = BookingStatus::tryFrom(
             $request->string('status')->trim()->toString()
         );
 
         $bookings = Booking::query()
-            ->with(['user', 'vehicle', 'serviceType', 'mechanic'])
+            ->with(['user', 'vehicle', 'serviceType', 'mechanic', 'payment'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where(
@@ -75,43 +68,80 @@ class BookingController extends Controller
 
     /**
      * Transisi status pengerjaan:
-     * confirmed -> in_progress -> completed.
+     * confirmed -> in_progress -> completed
+     * confirmed | in_progress -> no_show
      */
     public function update(
         UpdateBookingRequest $request,
-        Booking $booking
+        Booking $booking,
+        RetryWaitingRequests $retryWaitingRequests,
     ): RedirectResponse {
-        /** @var array<string, BookingStatus> $transitions */
-        $transitions = [
-            BookingStatus::CONFIRMED->value => BookingStatus::IN_PROGRESS,
+        $targetStatus = $request->validated('status');
 
-            BookingStatus::IN_PROGRESS->value => BookingStatus::COMPLETED,
+        $validTransitions = [
+            BookingStatus::CONFIRMED->value => [
+                BookingStatus::IN_PROGRESS->value,
+                BookingStatus::NO_SHOW->value,
+            ],
+            BookingStatus::IN_PROGRESS->value => [
+                BookingStatus::COMPLETED->value,
+                BookingStatus::NO_SHOW->value,
+            ],
         ];
 
-        $target =
-            $transitions[$booking->status->value] ?? null;
+        $allowed = $validTransitions[$booking->status->value] ?? [];
 
-        if (
-            ! $target ||
-            $request->validated('status') !== $target->value
-        ) {
+        if (! in_array($targetStatus, $allowed)) {
             return back()->with(
                 'error',
                 "Order {$booking->booking_code} tidak bisa dipindah ke status tersebut."
             );
         }
 
+        $target = BookingStatus::from($targetStatus);
+
         $booking->update([
             'status' => $target,
-
             'completed_at' => $target === BookingStatus::COMPLETED
+                ? now()
+                : null,
+            'no_show_at' => $target === BookingStatus::NO_SHOW
                 ? now()
                 : null,
         ]);
 
+        if ($target === BookingStatus::NO_SHOW) {
+            $retryWaitingRequests->handle();
+        }
+
         return back()->with(
             'success',
             "Order {$booking->booking_code} diperbarui."
+        );
+    }
+
+    /**
+     * Tandai sisa pembayaran (cash) sudah lunas.
+     */
+    public function markPaid(Booking $booking): RedirectResponse
+    {
+        abort_unless(
+            auth()->user()->role === UserRole::ADMIN,
+            403
+        );
+
+        if ($booking->paid_at) {
+            return back()->with(
+                'error',
+                "Order {$booking->booking_code} sudah lunas."
+            );
+        }
+
+        $booking->update(['paid_at' => now()]);
+
+        return back()->with(
+            'success',
+            "Pembayaran sisa order {$booking->booking_code} ditandai lunas."
         );
     }
 }

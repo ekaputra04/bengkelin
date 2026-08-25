@@ -3,9 +3,9 @@
 use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\BookingRequest;
-use App\Models\Mechanic;
 use App\Models\Payment;
 use App\Models\ServiceType;
 use App\Models\User;
@@ -38,9 +38,11 @@ function pendingBookingWithPayment(): array
         'is_active' => true,
     ]);
 
-    $mechanic = Mechanic::create([
-        'name' => 'Budi',
-        'phone' => '081234567890',
+    $mechanic = User::create([
+        'name' => 'Budi Santoso',
+        'email' => 'budi-webhook@bengkelin.test',
+        'password' => bcrypt('password'),
+        'role' => UserRole::MECHANIC,
         'is_active' => true,
     ]);
 
@@ -48,7 +50,7 @@ function pendingBookingWithPayment(): array
         'user_id' => $user->id,
         'vehicle_id' => $vehicle->id,
         'service_type_id' => $serviceType->id,
-        'mechanic_id' => $mechanic->id,
+        'mechanic_user_id' => $mechanic->id,
         'requested_start_at' => now()->addDay(),
         'status' => BookingRequestStatus::CONVERTED,
     ]);
@@ -59,7 +61,7 @@ function pendingBookingWithPayment(): array
         'user_id' => $user->id,
         'vehicle_id' => $vehicle->id,
         'service_type_id' => $serviceType->id,
-        'mechanic_id' => $mechanic->id,
+        'mechanic_user_id' => $mechanic->id,
         'start_at' => now()->addDay(),
         'end_at' => now()->addDay()->addHour(),
         'service_price' => 150000,

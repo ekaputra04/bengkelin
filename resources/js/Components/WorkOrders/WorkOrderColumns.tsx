@@ -1,19 +1,29 @@
 "use client";
 
-import { Play, SquareCheck } from "lucide-react";
+import {
+    Banknote,
+    ChevronDown,
+    Play,
+    SquareCheck,
+    UserX,
+} from "lucide-react";
 
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import { formatDateTime } from "@/lib/utils";
 import { TWorkOrder } from "@/types/types";
-import { createColumnHelper } from "@tanstack/react-table";
 import { router } from "@inertiajs/react";
+import { createColumnHelper } from "@tanstack/react-table";
 
 import { DataTableFeatures } from "../DataTable/DataTableFeatures";
 
-const columnHelper = createColumnHelper<
-    DataTableFeatures,
-    TWorkOrder
->();
+const columnHelper = createColumnHelper<DataTableFeatures, TWorkOrder>();
 
 const statusLabels: Record<string, string> = {
     pending_payment: "Menunggu DP",
@@ -39,9 +49,7 @@ function StatusBadge({ status }: { status: string }) {
     return (
         <Badge
             variant={
-                ["cancelled", "expired", "no_show"].includes(
-                    status,
-                )
+                ["cancelled", "expired", "no_show"].includes(status)
                     ? "destructive"
                     : "secondary"
             }
@@ -51,13 +59,106 @@ function StatusBadge({ status }: { status: string }) {
     );
 }
 
+function PaymentBadge({ booking }: { booking: TWorkOrder }) {
+    if (booking.paid_at) {
+        return <Badge variant="outline" className="text-green-600">Lunas</Badge>;
+    }
+
+    const dpPaid = booking.payment?.status === "paid";
+
+    return (
+        <Badge variant="secondary">
+            {dpPaid ? "DP Lunas, Sisa Belum" : "Belum Bayar DP"}
+        </Badge>
+    );
+}
+
+function ActionsCell({ booking }: { booking: TWorkOrder }) {
+    const actions: { label: string; icon: React.ReactNode; onClick: () => void; destructive?: boolean }[] = [];
+
+    if (booking.status === "confirmed") {
+        actions.push({
+            label: "Mulai Pengerjaan",
+            icon: <Play className="w-4 h-4" />,
+            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "in_progress" }),
+        });
+        actions.push({
+            label: "Tidak Datang",
+            icon: <UserX className="w-4 h-4" />,
+            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "no_show" }),
+            destructive: true,
+        });
+    } else if (booking.status === "in_progress") {
+        actions.push({
+            label: "Selesaikan",
+            icon: <SquareCheck className="w-4 h-4" />,
+            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "completed" }),
+        });
+        actions.push({
+            label: "Tidak Datang",
+            icon: <UserX className="w-4 h-4" />,
+            onClick: () => router.patch(route("work-orders.update", booking.id), { status: "no_show" }),
+            destructive: true,
+        });
+    }
+
+    if (booking.status === "completed" && !booking.paid_at) {
+        actions.push({
+            label: "Bayar Sisa (Cash)",
+            icon: <Banknote className="w-4 h-4" />,
+            onClick: () => router.patch(route("work-orders.paid", booking.id)),
+        });
+    }
+
+    if (actions.length === 0) {
+        return <span className="text-muted-foreground text-sm">-</span>;
+    }
+
+    if (actions.length === 1) {
+        return (
+            <Button
+                size="sm"
+                variant={actions[0].destructive ? "destructive" : "outline"}
+                onClick={actions[0].onClick}
+            >
+                {actions[0].icon}
+                {actions[0].label}
+            </Button>
+        );
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger>
+                <Button size="sm" variant="outline">
+                    Aksi <ChevronDown className="ml-1 w-4 h-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                {actions.map((action, i) => (
+                    <DropdownMenuItem
+                        key={i}
+                        className={
+                            action.destructive
+                                ? "text-destructive focus:text-destructive"
+                                : ""
+                        }
+                        onClick={action.onClick}
+                    >
+                        {action.icon}
+                        {action.label}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
 export const WorkOrderColumns = columnHelper.columns([
     columnHelper.accessor("booking_code", {
         header: "Kode Order",
         cell: (info) => (
-            <span className="font-mono text-sm">
-                {info.getValue()}
-            </span>
+            <span className="font-mono text-sm">{info.getValue()}</span>
         ),
     }),
 
@@ -89,10 +190,7 @@ export const WorkOrderColumns = columnHelper.columns([
     columnHelper.accessor("start_at", {
         header: "Jadwal",
         cell: (info) =>
-            new Date(info.getValue()).toLocaleString("id-ID", {
-                dateStyle: "medium",
-                timeStyle: "short",
-            }),
+            formatDateTime(new Date(info.getValue())),
     }),
 
     columnHelper.accessor("status", {
@@ -101,55 +199,13 @@ export const WorkOrderColumns = columnHelper.columns([
     }),
 
     columnHelper.display({
+        id: "payment",
+        header: "Pembayaran",
+        cell: ({ row }) => <PaymentBadge booking={row.original} />,
+    }),
+
+    columnHelper.display({
         header: "Aksi",
-        cell: ({ row }) => {
-            const booking = row.original;
-
-            /*
-             * Transisi status mengikuti enum BookingStatus:
-             * terjadwal -> dikerjakan -> selesai. Status lain
-             * (menunggu DP, dibatalkan, dll.) tidak punya aksi.
-             */
-            const nextAction =
-                booking.status === "confirmed"
-                    ? {
-                          label: "Mulai Pengerjaan",
-                          icon: <Play />,
-                          status: "in_progress",
-                      }
-                    : booking.status === "in_progress"
-                      ? {
-                            label: "Selesaikan",
-                            icon: <SquareCheck />,
-                            status: "completed",
-                        }
-                      : null;
-
-            if (!nextAction) {
-                return (
-                    <span className="text-muted-foreground text-sm">
-                        -
-                    </span>
-                );
-            }
-
-            return (
-                <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                        router.patch(
-                            route("work-orders.update", booking.id),
-                            {
-                                status: nextAction.status,
-                            },
-                        )
-                    }
-                >
-                    {nextAction.icon}
-                    {nextAction.label}
-                </Button>
-            );
-        },
+        cell: ({ row }) => <ActionsCell booking={row.original} />,
     }),
 ]);

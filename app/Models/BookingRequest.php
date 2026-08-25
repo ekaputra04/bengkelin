@@ -17,7 +17,7 @@ class BookingRequest extends Model
         'user_id',
         'vehicle_id',
         'service_type_id',
-        'mechanic_id',
+        'mechanic_user_id',
         'requested_start_at',
         'requested_end_at',
         'status',
@@ -50,7 +50,7 @@ class BookingRequest extends Model
 
     public function mechanic(): BelongsTo
     {
-        return $this->belongsTo(Mechanic::class);
+        return $this->belongsTo(User::class, 'mechanic_user_id');
     }
 
     public function booking(): HasOne
