@@ -24,12 +24,13 @@ Route::get('/', function () {
 });
 
 Route::prefix('admin')
+    ->name('admin.')
     ->middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {
         Route::prefix('dashboard')->group(function () {
 
             Route::get('/', [AdminDashboardController::class, 'index'])
-                ->name('dashboard.admin');
+                ->name('dashboard');
 
             Route::resource('service-types', ServiceTypeController::class);
 
@@ -66,6 +67,7 @@ Route::prefix('admin')
 
 
 Route::prefix('customer')
+    ->name('customer.')
     ->middleware(['auth', 'verified', 'role:customer'])
     ->group(function () {
         Route::prefix('dashboard')->group(function () {

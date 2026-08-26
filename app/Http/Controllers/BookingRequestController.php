@@ -78,10 +78,6 @@ class BookingRequestController extends Controller
     ) {
         $data = $request->validated();
 
-        /*
-         * Customer belum punya kendaraan terpilih:
-         * daftarkan kendaraan baru dari input form.
-         */
         if (empty($data['vehicle_id'])) {
             $vehicle = Vehicle::create([
                 'user_id' => $request->user()->id,
@@ -92,9 +88,7 @@ class BookingRequestController extends Controller
 
                 'brand' => $data['vehicle']['brand'],
                 'model' => $data['vehicle']['model'],
-
                 'vehicle_type' => $data['vehicle']['vehicle_type'],
-
                 'year' => $data['vehicle']['year'] ?? null,
             ]);
 
@@ -103,13 +97,9 @@ class BookingRequestController extends Controller
 
         $bookingRequest = BookingRequest::create([
             'user_id' => $request->user()->id,
-
             'vehicle_id' => $data['vehicle_id'],
-
             'service_type_id' => $data['service_type_id'],
-
             'requested_start_at' => $data['requested_start_at'],
-
             'status' => BookingRequestStatus::WAITING,
         ]);
 
@@ -117,39 +107,67 @@ class BookingRequestController extends Controller
             $bookingRequest
         );
 
+        /*
+     * Tidak mendapatkan slot.
+     */
         if (! $booking) {
-            /*
-             * Semua mekanik bentrok pada waktu tersebut:
-             * pengajuan tetap tersimpan sebagai antrean.
-             */
-            return to_route('service-requests.index')->with(
+            return to_route(
+                'customer.service-requests.index'
+            )->with(
                 'success',
-                'Semua mekanik sedang terisi pada waktu tersebut. Pengajuan Anda masuk daftar antrean.'
+                'Waktu yang dipilih sedang penuh. Pengajuan Anda masuk ke daftar antrean.'
             );
         }
 
         /*
-         * Langsung arahkan customer ke halaman pembayaran
-         * DP di Xendit. Kalau pembuatan invoice gagal,
-         * order tetap tersimpan dan DP bisa dibayar
-         * belakangan dari daftar pesanan.
-         */
+     * Pada titik ini:
+     *
+     * booking_request = processing
+     * booking         = pending_payment
+     *
+     * Slot sudah di-reserve.
+     */
+
         try {
             $payment = XenditService::createInvoice($booking);
+
+            /*
+         * Simpan informasi payment.
+         */
+            $booking->payment()->create([
+                'payment_method' => 'xendit',
+                'order_id' => $booking->booking_code,
+                'amount' => $booking->dp_amount,
+                'payment_url' => $payment->payment_url,
+                'status' => 'pending',
+            ]);
         } catch (\Throwable $e) {
             report($e);
 
-            return to_route('service-requests.index')->with(
-                'success',
-                "Order {$booking->booking_code} berhasil dibuat. Lanjutkan pembayaran DP dari daftar pesanan Anda."
+            /*
+         * Karena invoice gagal dibuat,
+         * jangan biarkan slot menggantung.
+         */
+            $booking->update([
+                'status' => 'expired',
+            ]);
+
+            $booking->bookingRequest()->update([
+                'status' => BookingRequestStatus::WAITING,
+                'failure_reason' =>
+                'Gagal membuat pembayaran.',
+            ]);
+
+            return to_route(
+                'customer.service-requests.index'
+            )->with(
+                'error',
+                'Pembayaran gagal dibuat. Silakan coba kembali.'
             );
         }
 
-        session()->flash(
-            'success',
-            "Order {$booking->booking_code} dibuat. Silakan selesaikan pembayaran DP untuk mengunci jadwal."
+        return Inertia::location(
+            $payment->payment_url
         );
-
-        return Inertia::location($payment->payment_url);
     }
 }

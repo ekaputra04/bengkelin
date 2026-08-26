@@ -40,7 +40,7 @@ export default function Index({ users, filters }: Props) {
         event.preventDefault();
 
         router.get(
-            route("users.index"),
+            route("admin.users.index"),
             {
                 search: search || undefined,
             },
@@ -55,7 +55,7 @@ export default function Index({ users, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("users.index"),
+            route("admin.users.index"),
             {},
             {
                 preserveState: true,

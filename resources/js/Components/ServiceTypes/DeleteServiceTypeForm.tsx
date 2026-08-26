@@ -17,7 +17,7 @@ export function DeleteServiceTypeForm({ serviceType }: Props) {
     const form = useForm({});
     const { closeDialog } = useIsDialogOpenStore();
 
-    const submitUrl = route("service-types.destroy", serviceType.id);
+    const submitUrl = route("admin.service-types.destroy", serviceType.id);
 
     const submit = async (event: FormEvent) => {
         event.preventDefault();

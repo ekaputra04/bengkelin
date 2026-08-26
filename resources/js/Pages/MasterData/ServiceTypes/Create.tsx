@@ -11,7 +11,7 @@ export default function Create() {
             breadcrumbs={[
                 {
                     label: "Jenis Layanan",
-                    href: route("service-types.index"),
+                    href: route("admin.service-types.index"),
                 },
                 { label: "Tambah" },
             ]}
@@ -20,7 +20,7 @@ export default function Create() {
 
             <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex items-center gap-4">
-                    <Link href={route("service-types.index")}>
+                    <Link href={route("admin.service-types.index")}>
                         <Button variant="ghost" size="icon">
                             <ArrowLeft />
                         </Button>
@@ -39,7 +39,7 @@ export default function Create() {
 
                 <div className="bg-card p-6 border rounded-xl">
                     <ServiceTypeForm
-                        submitUrl={route("service-types.store")}
+                        submitUrl={route("admin.service-types.store")}
                         method="post"
                         submitLabel="Tambah Layanan Servis"
                     />

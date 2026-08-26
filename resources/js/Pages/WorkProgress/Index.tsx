@@ -26,7 +26,7 @@ export default function Index({ mechanics, selectedDate }: Props) {
         }
 
         router.get(
-            route("work-progress.index"),
+            route("admin.work-progress.index"),
             {
                 date,
             },
@@ -72,36 +72,33 @@ export default function Index({ mechanics, selectedDate }: Props) {
                             Pantau jadwal pekerjaan mekanik.
                         </p>
                     </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => changeDay(-1)}
+                    >
+                        <ChevronLeft />
+                    </Button>
 
-                    <div className="flex items-center gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => changeDay(-1)}
-                        >
-                            <ChevronLeft />
-                        </Button>
-
-                        <div className="relative">
-                            <Input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(event) =>
-                                    changeDate(event.target.value)
-                                }
-                            />
-                        </div>
-
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => changeDay(1)}
-                        >
-                            <ChevronRight />
-                        </Button>
+                    <div className="relative">
+                        <Input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(event) => changeDate(event.target.value)}
+                        />
                     </div>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => changeDay(1)}
+                    >
+                        <ChevronRight />
+                    </Button>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">

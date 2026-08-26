@@ -1,6 +1,6 @@
-import { TBookingRequestStatus } from "@/types/types";
+import { TBookingRequestStatus } from '@/types/types';
 
-import { Badge } from "../ui/badge";
+import { Badge } from '../ui/badge';
 
 interface Props {
     status: TBookingRequestStatus;
@@ -8,8 +8,8 @@ interface Props {
 
 const statusLabel: Record<TBookingRequestStatus, string> = {
     waiting: "Menunggu",
-    processing: "Diproses",
-    converted: "Dikonversi",
+    processing: "Menunggu Pembayaran",
+    converted: "Diproses",
     expired: "Kadaluwarsa",
     cancelled: "Dibatalkan",
 };

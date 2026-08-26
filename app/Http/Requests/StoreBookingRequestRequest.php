@@ -31,7 +31,7 @@ class StoreBookingRequestRequest extends FormRequest
                 'integer',
                 Rule::exists('vehicles', 'id')
                     ->where(
-                        fn ($query) => $query->where('user_id', $this->user()->id)
+                        fn($query) => $query->where('user_id', $this->user()->id)
                     ),
             ],
 
@@ -70,7 +70,7 @@ class StoreBookingRequestRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:1980',
-                'max:'.(now()->year + 1),
+                'max:' . (now()->year + 1),
             ],
 
             'service_type_id' => [
@@ -78,14 +78,14 @@ class StoreBookingRequestRequest extends FormRequest
                 'integer',
                 Rule::exists('service_types', 'id')
                     ->where(
-                        fn ($query) => $query->where('is_active', true)
+                        fn($query) => $query->where('is_active', true)
                     ),
             ],
 
             'requested_start_at' => [
                 'required',
                 'date',
-                'after:now',
+                // 'after:now',
             ],
         ];
     }
@@ -111,7 +111,7 @@ class StoreBookingRequestRequest extends FormRequest
 
             'service_type_id.exists' => 'Jenis servis tidak tersedia.',
 
-            'requested_start_at.after' => 'Waktu servis harus setelah waktu sekarang.',
+            // 'requested_start_at.after' => 'Waktu servis harus setelah waktu sekarang.',
         ];
     }
 }

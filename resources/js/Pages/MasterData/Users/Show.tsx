@@ -1,11 +1,12 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState } from 'react';
 
-import UserHeader from "@/Components/Users/UserHeader";
-import UserInformationCard from "@/Components/Users/UserInformationCard";
-import UserVehiclesCard from "@/Components/Users/UserVehiclesCard";
-import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TUser } from "@/types/types";
-import { Head, useForm } from "@inertiajs/react";
+import UserHeader from '@/Components/Users/UserHeader';
+import UserInformationCard from '@/Components/Users/UserInformationCard';
+import UserVehiclesCard from '@/Components/Users/UserVehiclesCard';
+import { useAuth } from '@/hooks/use-auth';
+import DashboardLayout from '@/Layouts/DashboardLayout';
+import { TUser, TUserRole } from '@/types/types';
+import { Head, useForm } from '@inertiajs/react';
 
 interface Props {
     user: TUser;
@@ -13,6 +14,9 @@ interface Props {
 
 export default function Show({ user }: Props) {
     const [isEditing, setIsEditing] = useState(false);
+    const { role } = useAuth();
+    const backUrl =
+        role == "admin" ? "admin.users.index" : "customer.users.index";
 
     const form = useForm({
         role: user?.role,
@@ -22,7 +26,7 @@ export default function Show({ user }: Props) {
     const submit = (event: FormEvent) => {
         event.preventDefault();
 
-        form.put(route("users.update", user.id), {
+        form.put(route("admin.users.update", user.id), {
             onSuccess: () => {
                 setIsEditing(false);
             },
@@ -45,7 +49,7 @@ export default function Show({ user }: Props) {
             breadcrumbs={[
                 {
                     label: "Pengguna",
-                    href: route("users.index"),
+                    href: route(backUrl),
                 },
                 {
                     label: user?.name,
@@ -67,7 +71,9 @@ export default function Show({ user }: Props) {
                         role={form.data.role}
                         isActive={form.data.is_active}
                         processing={form.processing}
-                        onRoleChange={(value) => form.setData("role", value)}
+                        onRoleChange={(value) =>
+                            form.setData("role", value as TUserRole)
+                        }
                         onActiveChange={(value) =>
                             form.setData("is_active", value)
                         }

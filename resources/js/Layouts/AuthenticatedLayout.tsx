@@ -1,10 +1,10 @@
-import { PropsWithChildren, ReactNode, useState } from "react";
+import { PropsWithChildren, ReactNode, useState } from 'react';
 
-import ApplicationLogo from "@/Components/ApplicationLogo";
-import Dropdown from "@/Components/Dropdown";
-import NavLink from "@/Components/NavLink";
-import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link, usePage } from "@inertiajs/react";
+import ApplicationLogo from '@/Components/ApplicationLogo';
+import Dropdown from '@/Components/Dropdown';
+import NavLink from '@/Components/NavLink';
+import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function AuthenticatedLayout({
     header,
@@ -29,16 +29,10 @@ export default function AuthenticatedLayout({
 
                             <div className="hidden sm:flex space-x-8 sm:-my-px sm:ms-10">
                                 <NavLink
-                                    href={route("dashboard")}
-                                    active={route().current("dashboard")}
+                                    href={route("admin.dashboard")}
+                                    active={route().current("admin.dashboard")}
                                 >
                                     Dashboard
-                                </NavLink>
-                                <NavLink
-                                    href={route("service-types")}
-                                    active={route().current("service-types")}
-                                >
-                                    Jenis Layanan
                                 </NavLink>
                             </div>
                         </div>
@@ -139,8 +133,8 @@ export default function AuthenticatedLayout({
                 >
                     <div className="space-y-1 pt-2 pb-3">
                         <ResponsiveNavLink
-                            href={route("dashboard")}
-                            active={route().current("dashboard")}
+                            href={route("admin.dashboard")}
+                            active={route().current("admin.dashboard")}
                         >
                             Dashboard
                         </ResponsiveNavLink>

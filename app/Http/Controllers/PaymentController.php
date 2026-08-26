@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\BookingRequest;
 use App\Models\Payment;
 use App\Models\WebhookLog;
 use App\Services\Xendit\XenditService;
@@ -110,62 +112,105 @@ class PaymentController extends Controller
         return response()->json(['message' => 'OK']);
     }
 
-    private function applyCallback(Payment $payment, array $payload): void
-    {
+    private function applyCallback(
+        Payment $payment,
+        array $payload
+    ): void {
         DB::transaction(function () use ($payment, $payload) {
-
             /*
-             * Lock baris dan cek ulang status: callback bisa
-             * datang lebih dari sekali (harus idempoten).
-             */
+         * Lock payment agar callback yang sama
+         * tidak diproses secara bersamaan.
+         */
             $payment = Payment::query()
                 ->whereKey($payment->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            /*
+         * Payment sudah final.
+         *
+         * Callback Xendit bisa dikirim lebih dari sekali.
+         * Jangan proses ulang.
+         */
+            if ($payment->status !== PaymentStatus::PENDING) {
+                return;
+            }
+
+            /*
+         * Lock booking.
+         */
             $booking = Booking::query()
                 ->whereKey($payment->booking_id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($payment->status !== PaymentStatus::PENDING) {
-                return;
-            }
+            /*
+         * Lock booking request juga karena statusnya
+         * akan ikut berubah.
+         */
+            $bookingRequest = BookingRequest::query()
+                ->whereKey($booking->booking_request_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             match ($payload['status'] ?? null) {
-                'PAID' => $this->markPaid($payment, $booking),
-                'EXPIRED' => $this->markExpired($payment, $booking),
+                'PAID' => $this->markPaid(
+                    $payment,
+                    $booking,
+                    $bookingRequest
+                ),
+
+                'EXPIRED' => $this->markExpired(
+                    $payment,
+                    $booking,
+                    $bookingRequest
+                ),
+
                 default => null,
             };
         });
     }
 
-    private function markPaid(Payment $payment, Booking $booking): void
-    {
+    private function markPaid(
+        Payment $payment,
+        Booking $booking,
+        BookingRequest $bookingRequest
+    ): void {
         $payment->update([
             'status' => PaymentStatus::PAID,
             'paid_at' => now(),
         ]);
 
-        if ($booking->status === BookingStatus::PENDING_PAYMENT) {
-            $booking->update([
-                'status' => BookingStatus::CONFIRMED,
-                'confirmed_at' => now(),
-            ]);
-        }
+        $booking->update([
+            'status' => BookingStatus::CONFIRMED,
+            'paid_at' => now(),
+            'confirmed_at' => now(),
+        ]);
+
+        $bookingRequest->update([
+            'status' => BookingRequestStatus::CONVERTED,
+            'failure_reason' => null,
+        ]);
     }
 
-    private function markExpired(Payment $payment, Booking $booking): void
-    {
+    private function markExpired(
+        Payment $payment,
+        Booking $booking,
+        BookingRequest $bookingRequest
+    ): void {
         $payment->update([
             'status' => PaymentStatus::EXPIRED,
             'expired_at' => now(),
         ]);
 
-        if ($booking->status === BookingStatus::PENDING_PAYMENT) {
-            $booking->update([
-                'status' => BookingStatus::EXPIRED,
-            ]);
-        }
+        $booking->update([
+            'status' => BookingStatus::EXPIRED,
+        ]);
+
+        $bookingRequest->update([
+            'status' => BookingRequestStatus::WAITING,
+            'failure_reason' =>
+            'Pembayaran DP kedaluwarsa.',
+        ]);
     }
 }

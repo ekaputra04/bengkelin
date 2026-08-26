@@ -44,13 +44,6 @@ const fmtTime = (value: string) =>
         minute: "2-digit",
     });
 
-const vehicleIcon = (type: string) =>
-    type === "car" ? (
-        <span className="material-symbols-outlined">directions_car</span>
-    ) : (
-        <span className="material-symbols-outlined">two_wheeler</span>
-    );
-
 export default function UserDashboard({
     vehicles,
     upcomingBooking,
@@ -81,7 +74,7 @@ export default function UserDashboard({
                             </p>
                         </div>
 
-                        <Link href={route("service-requests.create")}>
+                        <Link href={route("customer.service-requests.create")}>
                             <Button>
                                 <Key />
                                 Pesan Layanan
@@ -115,13 +108,6 @@ export default function UserDashboard({
 
                                 <div className="gap-6 grid grid-cols-1 sm:grid-cols-2 p-4">
                                     <div className="flex items-start gap-4">
-                                        <div className="flex justify-center items-center bg-secondary rounded-full w-12 h-12 text-foreground shrink-0">
-                                            {vehicleIcon(
-                                                upcomingBooking.vehicle
-                                                    .vehicle_type,
-                                            )}
-                                        </div>
-
                                         <div>
                                             <h4 className="font-semibold text-foreground text-label-md">
                                                 {upcomingBooking.vehicle.brand}{" "}
@@ -208,7 +194,9 @@ export default function UserDashboard({
 
                                 <div className="flex justify-end gap-3 bg-card px-4 py-3 border-border border-t">
                                     <Link
-                                        href={route("service-requests.index")}
+                                        href={route(
+                                            "customer.service-requests.index",
+                                        )}
                                         className="hover:bg-muted px-4 py-2 border border-primary rounded-lg text-label-md text-primary transition-colors"
                                     >
                                         View Details
@@ -226,7 +214,9 @@ export default function UserDashboard({
                                 </p>
 
                                 <Link
-                                    href={route("service-requests.create")}
+                                    href={route(
+                                        "customer.service-requests.create",
+                                    )}
                                     className="inline-block mt-2 text-label-md text-primary hover:underline"
                                 >
                                     Ajukan servis sekarang
@@ -242,7 +232,7 @@ export default function UserDashboard({
                             </h3>
 
                             <Link
-                                href={route("service-requests.index")}
+                                href={route("customer.service-requests.index")}
                                 className="text-label-md text-primary hover:underline"
                             >
                                 Lihat Semua
@@ -338,7 +328,7 @@ export default function UserDashboard({
                             </h3>
 
                             <Link
-                                href={route("service-requests.create")}
+                                href={route("customer.service-requests.create")}
                                 className="text-label-sm text-primary hover:underline"
                             >
                                 Manage
@@ -356,10 +346,6 @@ export default function UserDashboard({
                                     key={vehicle.id}
                                     className="group flex items-center gap-3 p-3 border border-border hover:border-primary rounded-lg transition-colors"
                                 >
-                                    <div className="flex justify-center items-center bg-muted group-hover:bg-primary rounded w-10 h-10 text-foreground group-hover:text-primary-foreground transition-colors">
-                                        {vehicleIcon(vehicle.vehicle_type)}
-                                    </div>
-
                                     <div className="flex-grow">
                                         <p className="text-foreground text-label-md">
                                             {vehicle.brand} {vehicle.model}
@@ -380,7 +366,7 @@ export default function UserDashboard({
                         </div>
 
                         <Link
-                            href={route("service-requests.create")}
+                            href={route("customer.service-requests.create")}
                             className="flex justify-center items-center gap-2 hover:bg-muted mt-4 py-2 border border-border border-dashed rounded-lg w-full text-label-md text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <span className="text-[18px] material-symbols-outlined">

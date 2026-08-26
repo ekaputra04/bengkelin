@@ -1,23 +1,15 @@
 "use client";
 
-import { formatCurrency, parseLocalDateTime } from "@/lib/utils";
-import { TBookingRequest } from "@/types/types";
-import { router } from "@inertiajs/react";
-import { createColumnHelper } from "@tanstack/react-table";
+import { formatCurrency, parseLocalDateTime } from '@/lib/utils';
+import { TBookingRequest } from '@/types/types';
+import { router } from '@inertiajs/react';
+import { createColumnHelper } from '@tanstack/react-table';
 
-import { DataTableFeatures } from "../DataTable/DataTableFeatures";
-import { Button } from "../ui/button";
-import BookingRequestStatusBadge from "./ServiceRequestStatusBadge";
+import { DataTableFeatures } from '../DataTable/DataTableFeatures';
+import { Button } from '../ui/button';
+import BookingRequestStatusBadge from './ServiceRequestStatusBadge';
 
 const columnHelper = createColumnHelper<DataTableFeatures, TBookingRequest>();
-
-const requestStatusLabels: Record<string, string> = {
-    waiting: "Menunggu Slot",
-    processing: "Diproses",
-    converted: "Order Dibuat",
-    expired: "Kedaluwarsa",
-    cancelled: "Dibatalkan",
-};
 
 export const BookingRequestColumns = columnHelper.columns([
     columnHelper.accessor((row) => row.vehicle, {

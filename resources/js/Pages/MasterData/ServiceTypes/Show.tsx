@@ -17,7 +17,7 @@ export default function Show({ serviceType }: Props) {
             breadcrumbs={[
                 {
                     label: "Jenis Layanan",
-                    href: route("service-types.index"),
+                    href: route("admin.service-types.index"),
                 },
                 { label: serviceType.name },
             ]}
@@ -27,7 +27,7 @@ export default function Show({ serviceType }: Props) {
             <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <Link href={route("service-types.index")}>
+                        <Link href={route("admin.service-types.index")}>
                             <Button variant="ghost" size="icon">
                                 <ArrowLeft />
                             </Button>
@@ -44,7 +44,9 @@ export default function Show({ serviceType }: Props) {
                         </div>
                     </div>
 
-                    <Link href={route("service-types.edit", serviceType.id)}>
+                    <Link
+                        href={route("admin.service-types.edit", serviceType.id)}
+                    >
                         <Button>
                             <Pencil className="mr-2 w-4 h-4" />
                             Edit

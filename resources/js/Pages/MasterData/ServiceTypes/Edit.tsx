@@ -1,10 +1,10 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from 'lucide-react';
 
-import { ServiceTypeForm } from "@/Components/ServiceTypes/ServiceTypeForm";
-import { Button } from "@/Components/ui/button";
-import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TServiceType } from "@/types/types";
-import { Head, Link } from "@inertiajs/react";
+import { ServiceTypeForm } from '@/Components/ServiceTypes/ServiceTypeForm';
+import { Button } from '@/Components/ui/button';
+import DashboardLayout from '@/Layouts/DashboardLayout';
+import { TServiceType } from '@/types/types';
+import { Head, Link } from '@inertiajs/react';
 
 interface Props {
     serviceType: TServiceType;
@@ -25,11 +25,11 @@ export default function Edit({ serviceType }: Props) {
             breadcrumbs={[
                 {
                     label: "Jenis Layanan",
-                    href: route("service-types.index"),
+                    href: route("admin.service-types.index"),
                 },
                 {
                     label: serviceType.name,
-                    href: route("service-types.show", serviceType.id),
+                    href: route("admin.service-types.show", serviceType.id),
                 },
                 { label: "Edit" },
             ]}
@@ -39,7 +39,7 @@ export default function Edit({ serviceType }: Props) {
             <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon">
-                        <Link href={route("service-types.index")}>
+                        <Link href={route("admin.service-types.index")}>
                             <ArrowLeft />
                         </Link>
                     </Button>
@@ -59,7 +59,7 @@ export default function Edit({ serviceType }: Props) {
                     <ServiceTypeForm
                         initialData={initialData}
                         submitUrl={route(
-                            "service-types.update",
+                            "admin.service-types.update",
                             serviceType.id,
                         )}
                         method="put"

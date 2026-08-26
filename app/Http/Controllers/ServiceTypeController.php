@@ -51,8 +51,8 @@ class ServiceTypeController extends Controller
     ): RedirectResponse {
         ServiceType::create($request->validated());
 
-        return to_route('service-types.index')
-            ->with('success', 'Service type berhasil ditambahkan.');
+        return to_route('admin.service-types.index')
+            ->with('success', 'Jenis layanan berhasil ditambahkan.');
     }
 
     /**
@@ -84,7 +84,7 @@ class ServiceTypeController extends Controller
     ): RedirectResponse {
         $serviceType->update($request->validated());
 
-        return to_route('service-types.index')
+        return to_route('admin.service-types.index')
             ->with('success', 'Service type berhasil diperbarui.');
     }
 
@@ -95,7 +95,7 @@ class ServiceTypeController extends Controller
     {
         $serviceType->delete();
 
-        return to_route('service-types.index')
+        return to_route('admin.service-types.index')
             ->with('success', 'Service type berhasil dihapus.');
     }
 }

@@ -1,23 +1,19 @@
-import { Plus } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { Plus } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { TServiceType, TVehicle } from "@/types/types";
-import { useForm } from "@inertiajs/react";
+    Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue
+} from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { useAuth } from '@/hooks/use-auth';
+import { formatLocalDate } from '@/lib/utils';
+import { TServiceType, TVehicle } from '@/types/types';
+import { useForm } from '@inertiajs/react';
 
-import { Spinner } from "../ui/spinner";
-import { formatLocalDate } from "@/lib/utils";
+import { Spinner } from '../ui/spinner';
 
 interface ServiceRequestFormProps {
     vehicles: TVehicle[];
@@ -41,6 +37,7 @@ export function ServiceRequestForm({
     serviceTypes,
 }: ServiceRequestFormProps) {
     const [useExisting, setUseExisting] = useState(vehicles.length > 0);
+    const { role } = useAuth();
 
     const form = useForm<FormData>({
         vehicle_id: "",
@@ -58,7 +55,6 @@ export function ServiceRequestForm({
         (type) => type.id === Number(form.data.service_type_id),
     );
 
-    // Label untuk SelectValue di trigger — tanpa ini trigger hanya menampilkan value mentah.
     const vehicleItems = vehicles.map((vehicle) => ({
         value: String(vehicle.id),
         label: `${vehicle.brand} ${vehicle.model} — ${vehicle.license_plate}`,
@@ -95,7 +91,7 @@ export function ServiceRequestForm({
                 data.date && data.time ? `${data.date}T${data.time}` : "",
         }));
 
-        form.post(route("service-requests.store"));
+        form.post(route(role + ".service-requests.store"));
     };
 
     const vehicleError = (field: string): string | undefined =>

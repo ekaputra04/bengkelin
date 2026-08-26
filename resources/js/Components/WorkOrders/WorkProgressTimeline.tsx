@@ -1,5 +1,11 @@
-import { cn } from "@/lib/utils";
-import { TBooking, TBookingStatus, TMechanicWorkProgress } from "@/types/types";
+import { bookingStatusConfig } from '@/consts/consts';
+import { cn } from '@/lib/utils';
+import { useBookingStore } from '@/stores/use-booking-store';
+import { useIsDialogOpenStore } from '@/stores/use-is-open-dialog-store';
+import { TBooking, TBookingStatus, TMechanicWorkProgress, TWorkOrder } from '@/types/types';
+
+import BookingDetail from '../Bookings/BookingDetail';
+import DialogTemplate from '../DialogTemplate';
 
 export const workProgressBookings: TBooking[] = [
     {
@@ -334,8 +340,8 @@ interface Props {
     selectedDate: string;
 }
 
-const START_HOUR = 8;
-const END_HOUR = 18;
+const START_HOUR = 1;
+const END_HOUR = 24;
 
 const SLOT_MINUTES = 30;
 const SLOT_WIDTH = 100;
@@ -362,9 +368,7 @@ function formatTimeFromMinutes(totalMinutes: number) {
 function getBookingStyle(booking: TBooking) {
     const start = getMinutes(booking.start_at);
     const end = getMinutes(booking.end_at);
-
     const left = ((start - timelineStartMinutes) / SLOT_MINUTES) * SLOT_WIDTH;
-
     const width = ((end - start) / SLOT_MINUTES) * SLOT_WIDTH;
 
     return {
@@ -373,169 +377,176 @@ function getBookingStyle(booking: TBooking) {
     };
 }
 
-const statusStyles: Record<TBookingStatus, string> = {
-    confirmed:
-        "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300",
-
-    in_progress:
-        "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300",
-
-    completed:
-        "border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300",
-
-    cancelled:
-        "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
-
-    no_show:
-        "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
-
-    expired:
-        "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
-
-    pending_payment:
-        "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
-};
-
 export default function WorkProgressTimeline({ mechanics }: Props) {
     const totalSlots =
         (timelineEndMinutes - timelineStartMinutes) / SLOT_MINUTES;
 
     const timelineWidth = totalSlots * SLOT_WIDTH;
+    const { selectedData, setSelectedData } = useBookingStore();
+    const { dialogType, openDialog } = useIsDialogOpenStore();
 
     return (
-        <div className="bg-card border rounded-xl overflow-x-auto">
-            <div
-                className="min-w-max"
-                style={{
-                    width: 180 + timelineWidth,
-                }}
-            >
-                {/* Timeline Header */}
-                <div className="flex bg-muted/40 border-b">
-                    <div className="left-0 z-20 sticky flex items-center bg-muted/40 px-4 py-3 border-r w-[180px] shrink-0">
-                        <span className="font-medium text-sm">Mekanik</span>
-                    </div>
+        <div className="">
+            <div className="bg-card border rounded-xl overflow-x-auto">
+                <div
+                    className="min-w-max"
+                    style={{
+                        width: 180 + timelineWidth,
+                    }}
+                >
+                    <div className="flex bg-muted/40 border-b">
+                        <div className="left-0 z-20 sticky flex items-center bg-muted/40 px-4 py-3 border-r w-45 shrink-0">
+                            <span className="font-medium text-sm">Mekanik</span>
+                        </div>
 
-                    <div
-                        className="relative h-12"
-                        style={{
-                            width: timelineWidth,
-                        }}
-                    >
-                        {Array.from({ length: totalSlots + 1 }, (_, index) => {
-                            const minutes =
-                                timelineStartMinutes + index * SLOT_MINUTES;
-
-                            const hour = Math.floor(minutes / 60);
-
-                            return (
-                                <div
-                                    key={minutes}
-                                    className="top-0 absolute flex items-center px-2 border-r h-full"
-                                    style={{
-                                        left: index * SLOT_WIDTH,
-                                        width: SLOT_WIDTH,
-                                    }}
-                                >
-                                    <span className="text-muted-foreground text-xs">
-                                        {formatTimeFromMinutes(hour * 60)}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {mechanics.map((mechanic) => {
-                    return (
                         <div
-                            key={mechanic?.id}
-                            className="flex border-b last:border-b-0"
+                            className="relative h-12"
+                            style={{
+                                width: timelineWidth,
+                            }}
                         >
-                            <div className="left-0 z-10 sticky flex items-center bg-card px-4 border-r w-[180px] h-24 shrink-0">
-                                <div>
-                                    <p className="font-medium text-sm">
-                                        {mechanic?.name}
-                                    </p>
+                            {Array.from(
+                                { length: totalSlots + 1 },
+                                (_, index) => {
+                                    const minutes =
+                                        timelineStartMinutes +
+                                        index * SLOT_MINUTES;
 
-                                    <p className="mt-1 text-muted-foreground text-xs">
-                                        {mechanic.bookings.length} pekerjaan
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div
-                                className="relative h-24"
-                                style={{
-                                    width: timelineWidth,
-                                }}
-                            >
-                                <div className="absolute inset-0 flex">
-                                    {Array.from(
-                                        {
-                                            length: totalSlots,
-                                        },
-                                        (_, index) => (
-                                            <div
-                                                key={index}
-                                                className={cn(
-                                                    "border-r h-full",
-                                                    index % 2 === 0
-                                                        ? "bg-background"
-                                                        : "bg-muted/10",
-                                                )}
-                                                style={{
-                                                    width: SLOT_WIDTH,
-                                                }}
-                                            />
-                                        ),
-                                    )}
-                                </div>
-
-                                {mechanic.bookings.map((booking) => {
-                                    const { left, width } =
-                                        getBookingStyle(booking);
+                                    const hour = Math.floor(minutes / 60);
 
                                     return (
                                         <div
-                                            key={booking.id}
-                                            className={cn(
-                                                "top-3 absolute shadow-sm px-3 py-2 border rounded-lg h-[72px] overflow-hidden",
-                                                statusStyles[booking.status] ??
-                                                    "border-border bg-muted",
-                                            )}
+                                            key={minutes}
+                                            className="top-0 absolute flex items-center px-2 border-r h-full"
                                             style={{
-                                                left,
-                                                width,
+                                                left: index * SLOT_WIDTH,
+                                                width: SLOT_WIDTH,
                                             }}
                                         >
-                                            <p className="font-semibold text-xs truncate">
-                                                {booking.service_type?.name}
-                                            </p>
-
-                                            <p className="mt-1 text-xs truncate">
-                                                {booking.vehicle?.license_plate}
-                                            </p>
-
-                                            <p className="opacity-70 mt-1 text-[11px] truncate">
+                                            <span className="text-muted-foreground text-xs">
                                                 {formatTimeFromMinutes(
-                                                    getMinutes(
-                                                        booking.start_at,
-                                                    ),
-                                                )}{" "}
-                                                -{" "}
-                                                {formatTimeFromMinutes(
-                                                    getMinutes(booking.end_at),
+                                                    hour * 60,
                                                 )}
-                                            </p>
+                                            </span>
                                         </div>
                                     );
-                                })}
-                            </div>
+                                },
+                            )}
                         </div>
-                    );
-                })}
+                    </div>
+
+                    {mechanics.map((mechanic) => {
+                        return (
+                            <div
+                                key={mechanic?.id}
+                                className="flex border-b last:border-b-0"
+                            >
+                                <div className="left-0 z-10 sticky flex items-center bg-card px-4 border-r w-45 h-24 shrink-0">
+                                    <div>
+                                        <p className="font-medium text-sm">
+                                            {mechanic?.name}
+                                        </p>
+
+                                        <p className="mt-1 text-muted-foreground text-xs">
+                                            {mechanic.bookings.length} pekerjaan
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="relative h-24"
+                                    style={{
+                                        width: timelineWidth,
+                                    }}
+                                >
+                                    <div className="absolute inset-0 flex">
+                                        {Array.from(
+                                            {
+                                                length: totalSlots,
+                                            },
+                                            (_, index) => (
+                                                <div
+                                                    key={index}
+                                                    className={cn(
+                                                        "border-r h-full",
+                                                        index % 2 === 0
+                                                            ? "bg-background"
+                                                            : "bg-muted/10",
+                                                    )}
+                                                    style={{
+                                                        width: SLOT_WIDTH,
+                                                    }}
+                                                />
+                                            ),
+                                        )}
+                                    </div>
+
+                                    {mechanic.bookings.map((booking) => {
+                                        const { left, width } =
+                                            getBookingStyle(booking);
+
+                                        return (
+                                            <div
+                                                key={booking.id}
+                                                className={cn(
+                                                    "top-3 absolute shadow-sm px-3 py-2 border rounded-lg h-18 overflow-hidden hover:cursor-pointer",
+
+                                                    bookingStatusConfig[
+                                                        booking.status
+                                                    ].className ??
+                                                        "border-border bg-muted",
+                                                )}
+                                                onClick={() => {
+                                                    setSelectedData(booking);
+                                                    openDialog("show");
+                                                }}
+                                                style={{
+                                                    left,
+                                                    width,
+                                                }}
+                                            >
+                                                <p className="font-semibold text-xs truncate">
+                                                    {booking.service_type?.name}
+                                                </p>
+
+                                                <p className="mt-1 text-xs truncate">
+                                                    {
+                                                        booking.vehicle
+                                                            ?.license_plate
+                                                    }
+                                                </p>
+
+                                                <p className="opacity-70 mt-1 text-[11px] truncate">
+                                                    {formatTimeFromMinutes(
+                                                        getMinutes(
+                                                            booking.start_at,
+                                                        ),
+                                                    )}{" "}
+                                                    -{" "}
+                                                    {formatTimeFromMinutes(
+                                                        getMinutes(
+                                                            booking.end_at,
+                                                        ),
+                                                    )}
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
+            {dialogType == "show" && selectedData && (
+                <DialogTemplate
+                    className="max-w-[90hw] max-h-[90vh] overflow-y-auto"
+                    title="Detail Layanan"
+                    description="Informasi detail pengerjaan layanan."
+                >
+                    <BookingDetail booking={selectedData as TWorkOrder} />
+                </DialogTemplate>
+            )}
         </div>
     );
 }

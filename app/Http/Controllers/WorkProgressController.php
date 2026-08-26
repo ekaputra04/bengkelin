@@ -57,6 +57,8 @@ class WorkProgressController extends Controller
                             'serviceType:id,name,description,duration_minutes,price,dp_amount,is_active',
 
                             'vehicle:id,user_id,license_plate,brand,model,vehicle_type,year',
+
+                            'payment'
                         ])
                         ->whereDate('start_at', $selectedDate)
                         ->orderBy('start_at');

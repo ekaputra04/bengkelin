@@ -1,13 +1,16 @@
-import { Search, X } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { Search, X } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 
-import { DataTable } from "@/Components/DataTable/DataTable";
-import { statusLabels, WorkOrderColumns } from "@/Components/WorkOrders/WorkOrderColumns";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TWorkOrder } from "@/types/types";
-import { Head, router } from "@inertiajs/react";
+import { DataTable } from '@/Components/DataTable/DataTable';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import {
+    Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue
+} from '@/Components/ui/select';
+import { WorkOrderColumns } from '@/Components/WorkOrders/WorkOrderColumns';
+import DashboardLayout from '@/Layouts/DashboardLayout';
+import { TWorkOrder } from '@/types/types';
+import { Head, router } from '@inertiajs/react';
 
 interface PaginationLink {
     url: string | null;
@@ -34,6 +37,29 @@ interface Props {
     };
 }
 
+const statusLabels: Record<string, string> = {
+    pending_payment: "Menunggu DP",
+    confirmed: "Terjadwal",
+    in_progress: "Dikerjakan",
+    completed: "Selesai",
+    cancelled: "Dibatalkan",
+    expired: "Kedaluwarsa",
+    no_show: "Tidak Datang",
+};
+
+export { statusLabels };
+
+const items: { label: string; value: string }[] = [
+    {
+        label: "Semua Status",
+        value: "all",
+    },
+    ...Object.entries(statusLabels).map(([value, label]) => ({
+        label,
+        value,
+    })),
+];
+
 /*
  * Sama dengan enum BookingStatus di backend.
  */
@@ -43,12 +69,9 @@ export default function Index({ bookings, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
     const [status, setStatus] = useState(filters.status ?? "");
 
-    const applyFilters = (
-        nextSearch: string,
-        nextStatus: string,
-    ) => {
+    const applyFilters = (nextSearch: string, nextStatus: string) => {
         router.get(
-            route("work-orders.index"),
+            route("admin.work-orders.index"),
             {
                 search: nextSearch || undefined,
                 status: nextStatus || undefined,
@@ -72,16 +95,11 @@ export default function Index({ bookings, filters }: Props) {
         applyFilters("", status);
     };
 
-    const handleStatusChange = (
-        event: React.ChangeEvent<HTMLSelectElement>,
-    ) => {
-        const nextStatus = event.target.value;
-
+    const handleStatusChange = (nextStatus: string) => {
         setStatus(nextStatus);
 
         applyFilters(search, nextStatus);
     };
-
     return (
         <DashboardLayout breadcrumbs={[{ label: "Pengerjaan Bengkel" }]}>
             <Head title="Pengerjaan Bengkel" />
@@ -93,8 +111,7 @@ export default function Index({ bookings, filters }: Props) {
                     </h1>
 
                     <p className="text-muted-foreground text-sm">
-                        Pantau order yang sedang dan akan
-                        dikerjakan mekanik.
+                        Pantau order yang sedang dan akan dikerjakan mekanik.
                     </p>
                 </div>
 
@@ -102,16 +119,14 @@ export default function Index({ bookings, filters }: Props) {
                     onSubmit={handleSearch}
                     className="flex flex-wrap items-center gap-2"
                 >
-                    <div className="relative flex-1 max-w-sm">
+                    <div className="relative flex-wrap flex-1 max-w-sm">
                         <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />
 
                         <Input
                             value={search}
-                            onChange={(event) =>
-                                setSearch(event.target.value)
-                            }
+                            onChange={(event) => setSearch(event.target.value)}
                             placeholder="Cari kode order, pelanggan, atau plat nomor..."
-                            className="pr-10 pl-9"
+                            className="pl-9"
                         />
 
                         {search && (
@@ -125,23 +140,32 @@ export default function Index({ bookings, filters }: Props) {
                         )}
                     </div>
 
-                    {/*
-                     * Filter status; native select agar
-                     * sederhana dan aksesibel.
-                     */}
-                    <select
+                    <Select
                         value={status}
-                        onChange={handleStatusChange}
-                        className="h-9 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                        onValueChange={(value) =>
+                            handleStatusChange(value as string)
+                        }
                     >
-                        <option value="">Semua Status</option>
+                        <SelectTrigger className="w-45">
+                            <SelectValue>
+                                {items.find((item) => item.value === status)
+                                    ?.label ?? "Semua Status"}
+                            </SelectValue>
+                        </SelectTrigger>
 
-                        {statusOptions.map(([value, label]) => (
-                            <option key={value} value={value}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectContent>
+                            <SelectGroup>
+                                {items.map((item) => (
+                                    <SelectItem
+                                        key={item.value}
+                                        value={item.value}
+                                    >
+                                        {item.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
 
                     <Button type="submit">
                         <Search />

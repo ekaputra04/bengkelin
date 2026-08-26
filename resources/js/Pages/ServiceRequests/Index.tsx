@@ -1,11 +1,12 @@
-import { Plus } from "lucide-react";
+import { Plus } from 'lucide-react';
 
-import { DataTable } from "@/Components/DataTable/DataTable";
-import { BookingRequestColumns } from "@/Components/ServiceRequests/BookingRequestColumns";
-import { Button } from "@/Components/ui/button";
-import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TBookingRequest } from "@/types/types";
-import { Head, Link } from "@inertiajs/react";
+import { DataTable } from '@/Components/DataTable/DataTable';
+import { BookingRequestColumns } from '@/Components/ServiceRequests/BookingRequestColumns';
+import { Button } from '@/Components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import DashboardLayout from '@/Layouts/DashboardLayout';
+import { TBookingRequest } from '@/types/types';
+import { Head, Link } from '@inertiajs/react';
 
 interface PaginationLink {
     url: string | null;
@@ -29,6 +30,12 @@ interface Props {
 }
 
 export default function Index({ bookingRequests }: Props) {
+    const { role } = useAuth();
+    const url =
+        role == "admin"
+            ? "admin.service-requests.create"
+            : "customer.service-requests.create";
+
     return (
         <DashboardLayout breadcrumbs={[{ label: "Pengajuan Servis" }]}>
             <Head title="Pengajuan Servis" />
@@ -46,7 +53,7 @@ export default function Index({ bookingRequests }: Props) {
                         </p>
                     </div>
 
-                    <Link href={route("service-requests.create")}>
+                    <Link href={route(url)}>
                         <Button>
                             <Plus className="mr-2 w-4 h-4" />
                             Ajukan Servis
@@ -61,6 +68,7 @@ export default function Index({ bookingRequests }: Props) {
                     nextPageUrl={bookingRequests.next_page_url}
                     total={bookingRequests.total}
                 />
+                <pre>{JSON.stringify(bookingRequests, null, 2)}</pre>
             </div>
         </DashboardLayout>
     );

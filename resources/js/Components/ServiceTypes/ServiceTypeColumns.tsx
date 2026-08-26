@@ -69,7 +69,10 @@ export const ServiceTypeColumns = columnHelper.columns([
 
                     <DropdownMenuContent align="end">
                         <Link
-                            href={route("service-types.show", serviceType.id)}
+                            href={route(
+                                "admin.service-types.show",
+                                serviceType.id,
+                            )}
                         >
                             <DropdownMenuItem>
                                 <Eye /> Lihat Detail
@@ -77,7 +80,10 @@ export const ServiceTypeColumns = columnHelper.columns([
                         </Link>
 
                         <Link
-                            href={route("service-types.edit", serviceType.id)}
+                            href={route(
+                                "admin.service-types.edit",
+                                serviceType.id,
+                            )}
                         >
                             <DropdownMenuItem>
                                 <Pencil /> Edit

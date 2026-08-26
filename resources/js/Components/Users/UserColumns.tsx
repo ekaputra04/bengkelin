@@ -1,7 +1,8 @@
 "use client";
 
-import { MoreHorizontal, Eye } from "lucide-react";
+import { Eye, MoreHorizontal } from "lucide-react";
 
+import { ServiceTypeStatusBadge } from "@/Components/ServiceTypes/ServiceTypeStatusBadge";
 import { Button } from "@/Components/ui/button";
 import {
     DropdownMenu,
@@ -9,12 +10,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import { ServiceTypeStatusBadge } from "@/Components/ServiceTypes/ServiceTypeStatusBadge";
 import { UserRoleBadge } from "@/Components/Users/UserRoleBadge";
-import { DataTableFeatures } from "../DataTable/DataTableFeatures";
 import { TUser } from "@/types/types";
 import { Link } from "@inertiajs/react";
 import { createColumnHelper } from "@tanstack/react-table";
+
+import { DataTableFeatures } from "../DataTable/DataTableFeatures";
 
 const columnHelper = createColumnHelper<DataTableFeatures, TUser>();
 
@@ -48,7 +49,7 @@ export const UserColumns = columnHelper.columns([
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="end">
-                        <Link href={route("users.show", user.id)}>
+                        <Link href={route("admin.users.show", user.id)}>
                             <DropdownMenuItem>
                                 <Eye /> Lihat Detail
                             </DropdownMenuItem>

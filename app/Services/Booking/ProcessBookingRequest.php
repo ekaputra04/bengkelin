@@ -3,6 +3,7 @@
 namespace App\Services\Booking;
 
 use App\Enums\BookingRequestStatus;
+use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\BookingRequest;
@@ -19,6 +20,7 @@ class ProcessBookingRequest
 
             $bookingRequest = BookingRequest::query()
                 ->lockForUpdate()
+                ->with('serviceType')
                 ->findOrFail($bookingRequest->id);
 
             if (
@@ -28,18 +30,10 @@ class ProcessBookingRequest
                 return $bookingRequest->booking;
             }
 
-            $bookingRequest->update([
-                'status' => BookingRequestStatus::PROCESSING,
-            ]);
-
             return $this->tryAssignSlot($bookingRequest);
         });
     }
 
-    /**
-     * Coba assign slot waktu ke booking request yang diberikan.
-     * Dipanggil juga dari RetryWaitingRequests saat slot kosong.
-     */
     public function tryAssignSlot(
         BookingRequest $bookingRequest
     ): ?Booking {
@@ -53,6 +47,12 @@ class ProcessBookingRequest
             $serviceType->duration_minutes
         );
 
+        /*
+         * Lock seluruh mekanik yang aktif.
+         *
+         * Tujuannya agar dua request yang datang
+         * bersamaan tidak memilih mekanik yang sama.
+         */
         $mechanics = User::query()
             ->where('role', UserRole::MECHANIC)
             ->where('is_active', true)
@@ -64,11 +64,14 @@ class ProcessBookingRequest
 
         foreach ($mechanics as $mechanic) {
             $hasConflict = Booking::query()
-                ->where('mechanic_user_id', $mechanic->id)
-                ->whereNotIn('status', [
-                    'cancelled',
-                    'expired',
-                    'no_show',
+                ->where(
+                    'mechanic_user_id',
+                    $mechanic->id
+                )
+                ->whereIn('status', [
+                    BookingStatus::PENDING_PAYMENT,
+                    BookingStatus::CONFIRMED,
+                    BookingStatus::IN_PROGRESS,
                 ])
                 ->where('start_at', '<', $endAt)
                 ->where('end_at', '>', $startAt)
@@ -80,16 +83,27 @@ class ProcessBookingRequest
             }
         }
 
+        /*
+         * Tidak ada mekanik.
+         */
         if (! $availableMechanic) {
             $bookingRequest->update([
                 'status' => BookingRequestStatus::WAITING,
-                'failure_reason' => 'No mechanic available for requested time.',
+                'failure_reason' =>
+                'Tidak ada mekanik yang tersedia pada waktu tersebut.',
             ]);
 
             return null;
         }
 
+        /*
+         * Slot berhasil ditemukan.
+         *
+         * Request sekarang masuk processing,
+         * bukan converted.
+         */
         $bookingRequest->update([
+            'status' => BookingRequestStatus::PROCESSING,
             'mechanic_user_id' => $availableMechanic->id,
             'requested_end_at' => $endAt,
             'failure_reason' => null,
@@ -98,38 +112,56 @@ class ProcessBookingRequest
         $servicePrice = $serviceType->price;
         $dpAmount = $serviceType->dp_amount;
 
-        $booking = Booking::create([
+        /*
+         * Reserve slot.
+         *
+         * Booking dibuat dengan status pending_payment.
+         */
+        return Booking::create([
             'booking_code' => $this->generateBookingCode(),
-            'booking_request_id' => $bookingRequest->id,
-            'user_id' => $bookingRequest->user_id,
-            'vehicle_id' => $bookingRequest->vehicle_id,
-            'service_type_id' => $bookingRequest->service_type_id,
-            'mechanic_user_id' => $availableMechanic->id,
+
+            'booking_request_id' =>
+            $bookingRequest->id,
+
+            'user_id' =>
+            $bookingRequest->user_id,
+
+            'vehicle_id' =>
+            $bookingRequest->vehicle_id,
+
+            'service_type_id' =>
+            $bookingRequest->service_type_id,
+
+            'mechanic_user_id' =>
+            $availableMechanic->id,
+
             'start_at' => $startAt,
             'end_at' => $endAt,
+
             'service_price' => $servicePrice,
             'dp_amount' => $dpAmount,
-            'remaining_amount' => $servicePrice - $dpAmount,
-            'status' => 'pending_payment',
-            'payment_expired_at' => now()->addMinutes(15),
-        ]);
+            'remaining_amount' =>
+            $servicePrice - $dpAmount,
 
-        $bookingRequest->update([
-            'status' => BookingRequestStatus::CONVERTED,
-        ]);
+            'status' =>
+            BookingStatus::PENDING_PAYMENT,
 
-        return $booking;
+            'payment_expired_at' =>
+            now()->addMinutes(15),
+        ]);
     }
 
     private function generateBookingCode(): string
     {
-        return 'BK-'.now()->format('YmdHis').'-'.
-          strtoupper(
-              substr(
-                  bin2hex(random_bytes(3)),
-                  0,
-                  6
-              )
-          );
+        return 'BK-' .
+            now()->format('YmdHis') .
+            '-' .
+            strtoupper(
+                substr(
+                    bin2hex(random_bytes(3)),
+                    0,
+                    6
+                )
+            );
     }
 }

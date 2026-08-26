@@ -43,7 +43,7 @@ export default function Index({ vehicles, filters }: Props) {
         event.preventDefault();
 
         router.get(
-            route("vehicles.index"),
+            route("admin.vehicles.index"),
             {
                 search: search || undefined,
             },
@@ -58,7 +58,7 @@ export default function Index({ vehicles, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("vehicles.index"),
+            route("admin.vehicles.index"),
             {},
             {
                 preserveState: true,

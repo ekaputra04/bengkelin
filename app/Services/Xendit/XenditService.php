@@ -52,7 +52,7 @@ class XenditService
          * Customer dikembalikan ke daftar pengajuan servis
          * setelah menyelesaikan (atau membatalkan) pembayaran.
          */
-        $redirectUrl = route('service-requests.index');
+        $redirectUrl = route('customer.service-requests.index');
 
         $response = Http::withBasicAuth(
             (string) config('services.xendit.secret_key'),

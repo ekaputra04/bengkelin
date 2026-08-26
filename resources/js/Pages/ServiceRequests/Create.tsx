@@ -1,10 +1,11 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from 'lucide-react';
 
-import { ServiceRequestForm } from "@/Components/ServiceRequests/ServiceRequestForm";
-import { Button } from "@/Components/ui/button";
-import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TServiceType, TVehicle } from "@/types/types";
-import { Head, Link } from "@inertiajs/react";
+import { ServiceRequestForm } from '@/Components/ServiceRequests/ServiceRequestForm';
+import { Button } from '@/Components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import DashboardLayout from '@/Layouts/DashboardLayout';
+import { TServiceType, TVehicle } from '@/types/types';
+import { Head, Link } from '@inertiajs/react';
 
 interface Props {
     vehicles: TVehicle[];
@@ -12,12 +13,14 @@ interface Props {
 }
 
 export default function Create({ vehicles, serviceTypes }: Props) {
+    const { role } = useAuth();
+
     return (
         <DashboardLayout
             breadcrumbs={[
                 {
                     label: "Pengajuan Servis",
-                    href: route("service-requests.index"),
+                    href: route(role + ".service-requests.index"),
                 },
                 { label: "Ajukan" },
             ]}
@@ -26,7 +29,7 @@ export default function Create({ vehicles, serviceTypes }: Props) {
 
             <div className="space-y-6 mx-auto max-w-3xl">
                 <div className="flex items-center gap-4">
-                    <Link href={route("service-requests.index")}>
+                    <Link href={route(role + ".service-requests.index")}>
                         <Button variant="ghost" size="icon">
                             <ArrowLeft />
                         </Button>
@@ -38,8 +41,8 @@ export default function Create({ vehicles, serviceTypes }: Props) {
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Pilih kendaraan, jenis servis, lalu
-                            tentukan tanggal & jam kedatangan.
+                            Pilih kendaraan, jenis servis, lalu tentukan tanggal
+                            & jam kedatangan.
                         </p>
                     </div>
                 </div>

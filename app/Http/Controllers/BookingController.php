@@ -16,11 +16,6 @@ class BookingController extends Controller
 {
     public function index(Request $request): Response
     {
-        abort_unless(
-            $request->user()->role === UserRole::ADMIN,
-            403
-        );
-
         $search = $request->string('search')->trim()->toString();
 
         $status = BookingStatus::tryFrom(
@@ -125,11 +120,6 @@ class BookingController extends Controller
      */
     public function markPaid(Booking $booking): RedirectResponse
     {
-        abort_unless(
-            auth()->user()->role === UserRole::ADMIN,
-            403
-        );
-
         if ($booking->paid_at) {
             return back()->with(
                 'error',
@@ -137,7 +127,7 @@ class BookingController extends Controller
             );
         }
 
-        $booking->update(['paid_at' => now()]);
+        $booking->update(['paid_at' => now(), 'status' => BookingStatus::FULLY_PAID]);
 
         return back()->with(
             'success',

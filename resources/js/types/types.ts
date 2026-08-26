@@ -10,11 +10,13 @@ export type TBookingStatus =
     | "confirmed"
     | "in_progress"
     | "completed"
+    | "fully_paid"
     | "cancelled"
     | "expired"
     | "no_show";
 
 export type TVehicleType = "motorcycle" | "car";
+export type TUserRole = "admin" | "customer" | "mechanic";
 
 export type TServiceType = {
     id?: number;
@@ -32,7 +34,7 @@ export type TUser = {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role: TUserRole;
     is_active: boolean;
     created_at?: string | null;
     updated_at?: string | null;
@@ -78,10 +80,10 @@ export type TBooking = {
 };
 
 export type TWorkOrder = TBooking & {
-    user: { id: number; name: string };
+    user: TUser;
     vehicle: TVehicle;
     service_type: TServiceType;
-    mechanic: { id: number; name: string };
+    mechanic: TUser;
     payment?: { id: number; status: string } | null;
 };
 

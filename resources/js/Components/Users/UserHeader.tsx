@@ -1,8 +1,9 @@
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil } from 'lucide-react';
 
-import { Button } from "@/Components/ui/button";
-import { TUser } from "@/types/types";
-import { Link } from "@inertiajs/react";
+import { Button } from '@/Components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { TUser } from '@/types/types';
+import { Link } from '@inertiajs/react';
 
 interface Props {
     user: TUser;
@@ -11,10 +12,14 @@ interface Props {
 }
 
 export default function UserHeader({ user, isEditing, onEdit }: Props) {
+    const { role } = useAuth();
+    const backUrl =
+        role == "admin" ? "admin.users.index" : "customer.users.index";
+
     return (
         <div className="flex justify-between items-center gap-4">
             <div className="flex items-center gap-4">
-                <Link href={route("users.index")}>
+                <Link href={route(backUrl)}>
                     <Button variant="ghost" size="icon">
                         <ArrowLeft />
                     </Button>

@@ -47,7 +47,7 @@ export default function Index({ serviceTypes, filters }: Props) {
         event.preventDefault();
 
         router.get(
-            route("service-types.index"),
+            route("admin.service-types.index"),
             {
                 search: search || undefined,
             },
@@ -62,7 +62,7 @@ export default function Index({ serviceTypes, filters }: Props) {
         setSearch("");
 
         router.get(
-            route("service-types.index"),
+            route("admin.service-types.index"),
             {},
             {
                 preserveState: true,
@@ -87,7 +87,7 @@ export default function Index({ serviceTypes, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href={route("service-types.create")}>
+                    <Link href={route("admin.service-types.create")}>
                         <Button>
                             <Plus className="mr-2 w-4 h-4" />
                             Tambah Layanan

@@ -11,7 +11,10 @@ interface Props {
 
 function VehicleItem({ vehicle }: { vehicle: TVehicle }) {
     return (
-        <Link href={route("vehicles.show", vehicle.id)} className="group block">
+        <Link
+            href={route("admin.vehicles.show", vehicle.id)}
+            className="group block"
+        >
             <div className="flex justify-between items-center hover:bg-muted/50 p-4 border rounded-xl transition-colors">
                 <div className="flex items-center gap-4">
                     <div className="flex justify-center items-center bg-muted rounded-lg w-11 h-11">

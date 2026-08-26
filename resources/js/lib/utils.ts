@@ -1,5 +1,7 @@
-import { ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+import { TUserRole } from '@/types/types';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -32,6 +34,22 @@ export function formatDateTime(date: string | Date): string {
         .replace(/\./g, ".");
 }
 
+export function formatDate(date: string | Date): string {
+    return new Intl.DateTimeFormat("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    }).format(new Date(date));
+}
+
+export function formatTime(date: string) {
+    return new Intl.DateTimeFormat("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(new Date(date));
+}
+
 export function formatLocalDate(date?: Date): string {
     const d = date ?? new Date();
 
@@ -58,4 +76,17 @@ export function formatDuration(start: string, end: string): string {
     }
 
     return `${hours} jam ${remainingMinutes} menit`;
+}
+
+export function getDashboardRoute(role: TUserRole) {
+    switch (role) {
+        case "admin":
+            return "admin.dashboard";
+
+        case "customer":
+            return "customer.dashboard";
+
+        default:
+            throw new Error(`Unsupported user role: ${role}`);
+    }
 }
