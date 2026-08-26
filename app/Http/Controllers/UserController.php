@@ -35,8 +35,10 @@ class UserController extends Controller
         ]);
     }
 
+
     public function show(User $user): Response
     {
+        $user->load(['vehicles']);
         return Inertia::render('MasterData/Users/Show', [
             'user' => $user,
         ]);

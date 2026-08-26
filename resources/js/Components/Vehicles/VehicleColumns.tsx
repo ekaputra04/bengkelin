@@ -9,17 +9,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import { DataTableFeatures } from "../DataTable/DataTableFeatures";
+import { vehicleTypeLabels } from "@/consts/consts";
 import { TVehicle } from "@/types/types";
 import { Link } from "@inertiajs/react";
 import { createColumnHelper } from "@tanstack/react-table";
 
-const columnHelper = createColumnHelper<DataTableFeatures, TVehicle>();
+import { DataTableFeatures } from "../DataTable/DataTableFeatures";
 
-const vehicleTypeLabels: Record<string, string> = {
-    motorcycle: "Sepeda Motor",
-    car: "Mobil",
-};
+const columnHelper = createColumnHelper<DataTableFeatures, TVehicle>();
 
 export const VehicleColumns = columnHelper.columns([
     columnHelper.accessor("license_plate", {
@@ -36,7 +33,8 @@ export const VehicleColumns = columnHelper.columns([
     }),
     columnHelper.accessor("vehicle_type", {
         header: "Jenis",
-        cell: (info) => vehicleTypeLabels[info.getValue()] ?? info.getValue(),
+        cell: (info) =>
+            vehicleTypeLabels[info.getValue() as string] ?? info.getValue(),
     }),
     columnHelper.accessor("year", {
         header: "Tahun",

@@ -1,12 +1,12 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button } from '@/Components/ui/button';
+import { Button } from "@/Components/ui/button";
 import WorkProgressTimeline, {
-    workProgressBookings
-} from '@/Components/WorkOrders/WorkProgressTimeline';
-import DashboardLayout from '@/Layouts/DashboardLayout';
-import { TBooking } from '@/types/types';
-import { Head, usePage } from '@inertiajs/react';
+    workProgressBookings,
+} from "@/Components/WorkOrders/WorkProgressTimeline";
+import DashboardLayout from "@/Layouts/DashboardLayout";
+import { TBooking } from "@/types/types";
+import { Head, usePage } from "@inertiajs/react";
 
 export default function Index() {
     const props = usePage().props;
@@ -24,17 +24,17 @@ export default function Index() {
         <DashboardLayout
             breadcrumbs={[
                 {
-                    label: "Work Progress",
+                    label: "Progres Pekerjaan",
                 },
             ]}
         >
-            <Head title="Work Progress" />
+            <Head title="Progres Pekerjaan" />
 
             <div className="space-y-6">
                 <div className="flex md:flex-row flex-col md:justify-between md:items-center gap-4">
                     <div>
                         <h1 className="font-semibold text-2xl tracking-tight">
-                            Work Progress
+                            Progres Pekerjaan
                         </h1>
 
                         <p className="text-muted-foreground text-sm">

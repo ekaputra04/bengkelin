@@ -39,14 +39,8 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function show(Request $request, Vehicle $vehicle): Response
+    public function show(Vehicle $vehicle): Response
     {
-        $user = $request->user();
-
-        if ($user->role !== UserRole::ADMIN && $vehicle->user_id !== $user->id) {
-            abort(403);
-        }
-
         $vehicle->load(['user', 'bookings.serviceType', 'bookings.mechanic']);
 
         return Inertia::render('Vehicles/Show', [

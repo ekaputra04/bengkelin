@@ -23,15 +23,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/work-progress', function () {
-    return Inertia::render('WorkProgress/Index', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
-
 Route::prefix('admin')
     ->middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {

@@ -1,16 +1,12 @@
 import { Calendar, Car, Hash } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { vehicleTypeLabels } from "@/consts/consts";
 import { TVehicle, TVehicleType } from "@/types/types";
 
 interface Props {
     vehicle: TVehicle;
 }
-
-const vehicleTypeLabels: Record<TVehicleType, string> = {
-    motorcycle: "Sepeda Motor",
-    car: "Mobil",
-};
 
 export default function VehicleInfoCard({ vehicle }: Props) {
     return (
@@ -55,8 +51,9 @@ export default function VehicleInfoCard({ vehicle }: Props) {
                         </p>
 
                         <p className="mt-1 font-medium">
-                            {vehicleTypeLabels[vehicle.vehicle_type] ??
-                                vehicle.vehicle_type}
+                            {vehicleTypeLabels[
+                                vehicle.vehicle_type as string
+                            ] ?? vehicle.vehicle_type}
                         </p>
                     </div>
 
