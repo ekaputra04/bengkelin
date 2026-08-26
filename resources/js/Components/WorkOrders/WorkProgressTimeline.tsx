@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
-import { TBooking, TBookingStatus } from '@/types/types';
+import { cn } from "@/lib/utils";
+import { TBooking, TBookingStatus, TMechanicWorkProgress } from "@/types/types";
 
 export const workProgressBookings: TBooking[] = [
     {
@@ -330,8 +330,8 @@ export const workProgressBookings: TBooking[] = [
 ];
 
 interface Props {
-    bookings: TBooking[];
-    date: string;
+    mechanics: TMechanicWorkProgress[];
+    selectedDate: string;
 }
 
 const START_HOUR = 8;
@@ -396,13 +396,7 @@ const statusStyles: Record<TBookingStatus, string> = {
         "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
 };
 
-export default function WorkProgressTimeline({ bookings }: Props) {
-    const mechanics = Array.from(
-        new Map(
-            bookings.map((booking) => [booking.mechanic?.id, booking.mechanic]),
-        ).values(),
-    );
-
+export default function WorkProgressTimeline({ mechanics }: Props) {
     const totalSlots =
         (timelineEndMinutes - timelineStartMinutes) / SLOT_MINUTES;
 
@@ -453,10 +447,6 @@ export default function WorkProgressTimeline({ bookings }: Props) {
                 </div>
 
                 {mechanics.map((mechanic) => {
-                    const mechanicBookings = bookings.filter(
-                        (booking) => booking.mechanic?.id === mechanic?.id,
-                    );
-
                     return (
                         <div
                             key={mechanic?.id}
@@ -469,7 +459,7 @@ export default function WorkProgressTimeline({ bookings }: Props) {
                                     </p>
 
                                     <p className="mt-1 text-muted-foreground text-xs">
-                                        {mechanicBookings.length} pekerjaan
+                                        {mechanic.bookings.length} pekerjaan
                                     </p>
                                 </div>
                             </div>
@@ -502,7 +492,7 @@ export default function WorkProgressTimeline({ bookings }: Props) {
                                     )}
                                 </div>
 
-                                {mechanicBookings.map((booking) => {
+                                {mechanic.bookings.map((booking) => {
                                     const { left, width } =
                                         getBookingStyle(booking);
 

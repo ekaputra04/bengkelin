@@ -1,24 +1,55 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/Components/ui/button";
-import WorkProgressTimeline, {
-    workProgressBookings,
-} from "@/Components/WorkOrders/WorkProgressTimeline";
+import { Input } from "@/Components/ui/input";
+import WorkProgressTimeline from "@/Components/WorkOrders/WorkProgressTimeline";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { TBooking } from "@/types/types";
-import { Head, usePage } from "@inertiajs/react";
+import { TMechanicWorkProgress } from "@/types/types";
+import { Head, router } from "@inertiajs/react";
 
-export default function Index() {
-    const props = usePage().props;
-    const bookings: TBooking[] = props.bookings as TBooking[];
-    const selectedDate = "2026-08-25";
+interface Props {
+    mechanics: TMechanicWorkProgress[];
+    selectedDate: string;
+}
 
+export default function Index({ mechanics, selectedDate }: Props) {
     const formattedDate = new Intl.DateTimeFormat("id-ID", {
         weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric",
     }).format(new Date(`${selectedDate}T00:00:00`));
+
+    const changeDate = (date: string) => {
+        if (!date || date === selectedDate) {
+            return;
+        }
+
+        router.get(
+            route("work-progress.index"),
+            {
+                date,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const changeDay = (days: number) => {
+        const date = new Date(`${selectedDate}T00:00:00`);
+
+        date.setDate(date.getDate() + days);
+
+        const nextDate = [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0"),
+        ].join("-");
+
+        changeDate(nextDate);
+    };
 
     return (
         <DashboardLayout
@@ -38,28 +69,51 @@ export default function Index() {
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Pantau jadwal pekerjaan mekanik hari ini.
+                            Pantau jadwal pekerjaan mekanik.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="icon">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => changeDay(-1)}
+                        >
                             <ChevronLeft />
                         </Button>
 
-                        <Button variant="outline" className="min-w-[220px]">
-                            <CalendarDays className="mr-2 w-4 h-4" />
+                        <div className="relative">
+                            <Input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(event) =>
+                                    changeDate(event.target.value)
+                                }
+                            />
+                        </div>
 
-                            {formattedDate}
-                        </Button>
-
-                        <Button variant="outline" size="icon">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => changeDay(1)}
+                        >
                             <ChevronRight />
                         </Button>
                     </div>
                 </div>
 
-                <WorkProgressTimeline bookings={bookings} date={selectedDate} />
+                <div className="flex items-center gap-2 text-sm">
+                    <CalendarDays className="w-4 h-4 text-muted-foreground" />
+
+                    <span className="font-medium">{formattedDate}</span>
+                </div>
+
+                <WorkProgressTimeline
+                    mechanics={mechanics}
+                    selectedDate={selectedDate}
+                />
             </div>
         </DashboardLayout>
     );

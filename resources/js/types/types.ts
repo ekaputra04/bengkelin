@@ -103,3 +103,7 @@ export type TBookingRequest = {
     booking?: TBooking | null;
     user?: TUser | null;
 };
+
+export type TMechanicWorkProgress = TUser & {
+    bookings: TBooking[];
+};
