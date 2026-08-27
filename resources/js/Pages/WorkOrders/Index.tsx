@@ -60,11 +60,6 @@ const items: { label: string; value: string }[] = [
     })),
 ];
 
-/*
- * Sama dengan enum BookingStatus di backend.
- */
-const statusOptions = Object.entries(statusLabels);
-
 export default function Index({ bookings, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
     const [status, setStatus] = useState(filters.status ?? "");

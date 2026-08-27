@@ -18,6 +18,8 @@ interface DialogTemplateProps {
     className?: string;
     children: React.ReactNode;
     closeMethod?: () => void;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 export default function DialogTemplate({
@@ -26,11 +28,25 @@ export default function DialogTemplate({
     className,
     children,
     closeMethod,
+    open,
+    onOpenChange,
 }: DialogTemplateProps) {
     const { isDialogOpen, closeDialog } = useIsDialogOpenStore();
+    const isControlled = typeof open === "boolean";
+    const dialogOpen = isControlled ? open : isDialogOpen;
+
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (onOpenChange) {
+            onOpenChange(nextOpen);
+        }
+
+        if (!nextOpen && !isControlled) {
+            closeDialog();
+        }
+    };
 
     return (
-        <Dialog open={isDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
             <DialogContent
                 showCloseButton={false}
                 onKeyDown={(event) => event.stopPropagation()}
@@ -45,7 +61,11 @@ export default function DialogTemplate({
                         <Button
                             variant={"link"}
                             onClick={() => {
-                                closeDialog();
+                                if (isControlled) {
+                                    onOpenChange?.(false);
+                                } else {
+                                    closeDialog();
+                                }
                             }}
                         >
                             <X />
@@ -56,7 +76,12 @@ export default function DialogTemplate({
                 <Button
                     variant={"outline"}
                     onClick={() => {
-                        closeDialog();
+                        if (isControlled) {
+                            onOpenChange?.(false);
+                        } else {
+                            closeDialog();
+                        }
+
                         if (closeMethod) {
                             closeMethod();
                         }

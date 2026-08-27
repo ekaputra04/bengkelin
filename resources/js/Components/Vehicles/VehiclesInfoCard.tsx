@@ -1,8 +1,8 @@
-import { Calendar, Car, Hash } from "lucide-react";
+import { Calendar, Car, Hash } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { vehicleTypeLabels } from "@/consts/consts";
-import { TVehicle, TVehicleType } from "@/types/types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { vehicleTypeLabels } from '@/consts/consts';
+import { TVehicle } from '@/types/types';
 
 interface Props {
     vehicle: TVehicle;

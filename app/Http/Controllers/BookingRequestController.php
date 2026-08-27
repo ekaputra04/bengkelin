@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BookingRequestStatus;
+use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\UserRole;
 use App\Http\Requests\StoreBookingRequestRequest;
+use App\Models\Booking;
 use App\Models\BookingRequest;
 use App\Models\ServiceType;
 use App\Models\Vehicle;
 use App\Services\Booking\ProcessBookingRequest;
 use App\Services\Xendit\XenditService;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -129,18 +133,7 @@ class BookingRequestController extends Controller
      */
 
         try {
-            $payment = XenditService::createInvoice($booking);
-
-            /*
-         * Simpan informasi payment.
-         */
-            $booking->payment()->create([
-                'payment_method' => 'xendit',
-                'order_id' => $booking->booking_code,
-                'amount' => $booking->dp_amount,
-                'payment_url' => $payment->payment_url,
-                'status' => 'pending',
-            ]);
+            $payment = $this->createOrReusePendingPayment($booking);
         } catch (\Throwable $e) {
             report($e);
 
@@ -169,5 +162,87 @@ class BookingRequestController extends Controller
         return Inertia::location(
             $payment->payment_url
         );
+    }
+
+    public function updateStatus(
+        Request $request,
+        BookingRequest $bookingRequest,
+        ProcessBookingRequest $processBookingRequest
+    ): RedirectResponse {
+        $data = $request->validate([
+            'status' => ['required', 'string', 'in:processing,cancelled'],
+        ]);
+
+        $bookingRequest->loadMissing('booking.payment');
+
+        if ($bookingRequest->status !== BookingRequestStatus::WAITING) {
+            return back()->with(
+                'error',
+                'Hanya pengajuan dengan status menunggu yang bisa diubah.'
+            );
+        }
+
+        if ($data['status'] === BookingRequestStatus::CANCELLED->value) {
+            $bookingRequest->update([
+                'status' => BookingRequestStatus::CANCELLED,
+                'mechanic_user_id' => null,
+                'requested_end_at' => null,
+                'failure_reason' => 'Pengajuan dibatalkan oleh admin.',
+            ]);
+
+            return back()->with(
+                'success',
+                'Status pengajuan servis berhasil diubah menjadi dibatalkan.'
+            );
+        }
+
+        $booking = $processBookingRequest->execute($bookingRequest);
+
+        if (! $booking) {
+            return back()->with(
+                'error',
+                'Pengajuan belum bisa diproses karena slot mekanik belum tersedia.'
+            );
+        }
+
+        try {
+            $this->createOrReusePendingPayment($booking);
+        } catch (\Throwable $e) {
+            report($e);
+
+            $booking->update([
+                'status' => BookingStatus::EXPIRED,
+            ]);
+
+            $booking->bookingRequest()->update([
+                'status' => BookingRequestStatus::WAITING,
+                'failure_reason' => 'Gagal membuat pembayaran.',
+            ]);
+
+            return back()->with(
+                'error',
+                'Invoice pembayaran gagal dibuat. Status dikembalikan ke menunggu.'
+            );
+        }
+
+        return back()->with(
+            'success',
+            'Status pengajuan servis berhasil diubah menjadi menunggu pembayaran.'
+        );
+    }
+
+    private function createOrReusePendingPayment(Booking $booking)
+    {
+        $payment = $booking->payment()
+            ->where('status', PaymentStatus::PENDING)
+            ->where('expired_at', '>', now())
+            ->latest()
+            ->first();
+
+        if ($payment) {
+            return $payment;
+        }
+
+        return XenditService::createInvoice($booking);
     }
 }

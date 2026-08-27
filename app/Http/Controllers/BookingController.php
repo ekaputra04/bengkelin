@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Models\Booking;
 use App\Services\Booking\RetryWaitingRequests;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,42 +23,82 @@ class BookingController extends Controller
             $request->string('status')->trim()->toString()
         );
 
+        $user = $request->user();
+
         $bookings = Booking::query()
-            ->with(['user', 'vehicle', 'serviceType', 'mechanic', 'payment'])
+            ->with([
+                'user',
+                'vehicle',
+                'serviceType',
+                'mechanic',
+                'payment',
+            ])
+            ->when(
+                $user->role === UserRole::CUSTOMER,
+                function ($query) use ($user) {
+                    $query->where(
+                        'user_id',
+                        $user->id
+                    );
+                }
+            )
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
-                    $query->where(
-                        'booking_code',
-                        'like',
-                        "%{$search}%"
-                    )->orWhereHas('vehicle', function ($query) use ($search) {
-                        $query->where(
-                            'license_plate',
+                    $query
+                        ->where(
+                            'booking_code',
                             'like',
                             "%{$search}%"
+                        )
+                        ->orWhereHas(
+                            'vehicle',
+                            function ($query) use ($search) {
+                                $query->where(
+                                    'license_plate',
+                                    'like',
+                                    "%{$search}%"
+                                );
+                            }
+                        )
+                        ->orWhereHas(
+                            'user',
+                            function ($query) use ($search) {
+                                $query->where(
+                                    'name',
+                                    'like',
+                                    "%{$search}%"
+                                );
+                            }
                         );
-                    })->orWhereHas('user', function ($query) use ($search) {
-                        $query->where(
-                            'name',
-                            'like',
-                            "%{$search}%"
-                        );
-                    });
                 });
             })
             ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
+                $query->where(
+                    'status',
+                    $status
+                );
             })
+
             ->latest('start_at')
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('WorkOrders/Index', [
             'bookings' => $bookings,
+
             'filters' => [
                 'search' => $search,
                 'status' => $status?->value,
             ],
+        ]);
+    }
+
+    public function show(Booking $booking): Response
+    {
+        $booking->load(['user', 'vehicle', 'serviceType', 'mechanic', 'payment']);
+
+        return Inertia::render('WorkOrders/Show', [
+            'booking' => $booking,
         ]);
     }
 
@@ -72,6 +113,7 @@ class BookingController extends Controller
         RetryWaitingRequests $retryWaitingRequests,
     ): RedirectResponse {
         $targetStatus = $request->validated('status');
+        $endTime = $request->validated('end_time');
 
         $validTransitions = [
             BookingStatus::CONFIRMED->value => [
@@ -95,10 +137,26 @@ class BookingController extends Controller
 
         $target = BookingStatus::from($targetStatus);
 
+        $completedAt = null;
+
+        if ($target === BookingStatus::COMPLETED) {
+            $completedAt = $this->resolveCompletedAt($booking, $endTime);
+
+            if ($completedAt->lessThanOrEqualTo($booking->start_at)) {
+                return back()->with(
+                    'error',
+                    "Jam selesai order {$booking->booking_code} harus setelah jam mulai."
+                );
+            }
+        }
+
         $booking->update([
             'status' => $target,
+            'end_at' => $target === BookingStatus::COMPLETED
+                ? $completedAt
+                : $booking->end_at,
             'completed_at' => $target === BookingStatus::COMPLETED
-                ? now()
+                ? $completedAt
                 : null,
             'no_show_at' => $target === BookingStatus::NO_SHOW
                 ? now()
@@ -109,24 +167,27 @@ class BookingController extends Controller
             $retryWaitingRequests->handle();
         }
 
+        if ($target === BookingStatus::COMPLETED) {
+            $retryWaitingRequests->handle();
+        }
+
         return back()->with(
             'success',
             "Order {$booking->booking_code} diperbarui."
         );
     }
 
-    /**
-     * Tandai sisa pembayaran (cash) sudah lunas.
-     */
+    private function resolveCompletedAt(
+        Booking $booking,
+        ?string $endTime
+    ): Carbon {
+        return $booking->start_at->copy()->setTimeFromTimeString(
+            $endTime ?? $booking->end_at->format('H:i')
+        );
+    }
+
     public function markPaid(Booking $booking): RedirectResponse
     {
-        if ($booking->paid_at) {
-            return back()->with(
-                'error',
-                "Order {$booking->booking_code} sudah lunas."
-            );
-        }
-
         $booking->update(['paid_at' => now(), 'status' => BookingStatus::FULLY_PAID]);
 
         return back()->with(

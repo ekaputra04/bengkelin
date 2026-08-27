@@ -1,12 +1,14 @@
 "use client";
 
-import { formatCurrency, parseLocalDateTime } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
+import { formatCurrency, formatDateTime } from '@/lib/utils';
 import { TBookingRequest } from '@/types/types';
 import { router } from '@inertiajs/react';
 import { createColumnHelper } from '@tanstack/react-table';
 
 import { DataTableFeatures } from '../DataTable/DataTableFeatures';
 import { Button } from '../ui/button';
+import BookingRequestActions from './BookingRequestActions';
 import BookingRequestStatusBadge from './ServiceRequestStatusBadge';
 
 const columnHelper = createColumnHelper<DataTableFeatures, TBookingRequest>();
@@ -61,11 +63,7 @@ export const BookingRequestColumns = columnHelper.columns([
 
     columnHelper.accessor("requested_start_at", {
         header: "Waktu Diajukan",
-        cell: (info) =>
-            parseLocalDateTime(info.getValue()).toLocaleString("id-ID", {
-                dateStyle: "medium",
-                timeStyle: "short",
-            }),
+        cell: (info) => formatDateTime(info.getValue()),
     }),
 
     columnHelper.accessor("status", {
@@ -108,21 +106,26 @@ export const BookingRequestColumns = columnHelper.columns([
         id: "aksi",
         header: "Aksi",
         cell: ({ row }) => {
+            const { role } = useAuth();
             const booking = row.original.booking;
 
-            if (booking?.status !== "pending_payment") {
-                return null;
-            }
-
             return (
-                <Button
-                    size="sm"
-                    onClick={() =>
-                        router.post(route("bookings.pay", booking.id))
-                    }
-                >
-                    Bayar DP
-                </Button>
+                <div className="flex items-center gap-2">
+                    {booking?.status === "pending_payment" ? (
+                        <Button
+                            size="sm"
+                            onClick={() =>
+                                router.post(route("bookings.pay", booking.id))
+                            }
+                        >
+                            Bayar DP
+                        </Button>
+                    ) : null}
+
+                    {role == "admin" && (
+                        <BookingRequestActions bookingRequest={row.original} />
+                    )}
+                </div>
             );
         },
     }),

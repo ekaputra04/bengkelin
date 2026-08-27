@@ -68,7 +68,6 @@ export default function Index({ bookingRequests }: Props) {
                     nextPageUrl={bookingRequests.next_page_url}
                     total={bookingRequests.total}
                 />
-                <pre>{JSON.stringify(bookingRequests, null, 2)}</pre>
             </div>
         </DashboardLayout>
     );

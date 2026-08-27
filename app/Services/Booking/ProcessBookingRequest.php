@@ -63,19 +63,11 @@ class ProcessBookingRequest
         $availableMechanic = null;
 
         foreach ($mechanics as $mechanic) {
-            $hasConflict = Booking::query()
-                ->where(
-                    'mechanic_user_id',
-                    $mechanic->id
-                )
-                ->whereIn('status', [
-                    BookingStatus::PENDING_PAYMENT,
-                    BookingStatus::CONFIRMED,
-                    BookingStatus::IN_PROGRESS,
-                ])
-                ->where('start_at', '<', $endAt)
-                ->where('end_at', '>', $startAt)
-                ->exists();
+            $hasConflict = $this->hasScheduleConflict(
+                mechanicId: $mechanic->id,
+                startAt: $startAt,
+                endAt: $endAt,
+            );
 
             if (! $hasConflict) {
                 $availableMechanic = $mechanic;
@@ -163,5 +155,24 @@ class ProcessBookingRequest
                     6
                 )
             );
+    }
+
+    private function hasScheduleConflict(
+        int $mechanicId,
+        Carbon $startAt,
+        Carbon $endAt
+    ): bool {
+        return Booking::query()
+            ->where('mechanic_user_id', $mechanicId)
+            ->whereIn('status', [
+                BookingStatus::PENDING_PAYMENT,
+                BookingStatus::CONFIRMED,
+                BookingStatus::IN_PROGRESS,
+                BookingStatus::COMPLETED,
+                BookingStatus::FULLY_PAID,
+            ])
+            ->where('start_at', '<', $endAt)
+            ->where('end_at', '>', $startAt)
+            ->exists();
     }
 }

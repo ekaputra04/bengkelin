@@ -23,6 +23,11 @@ class VehicleSeeder extends Seeder
             ['license_plate' => 'B5566VWX', 'brand' => 'Daihatsu', 'model' => 'Xenia', 'vehicle_type' => 'car', 'year' => 2022],
             ['license_plate' => 'L7788YZA', 'brand' => 'Toyota', 'model' => 'Innova', 'vehicle_type' => 'car', 'year' => 2019],
             ['license_plate' => 'B9900BCD', 'brand' => 'Honda', 'model' => 'CR-V', 'vehicle_type' => 'car', 'year' => 2023],
+            ['license_plate' => 'DK1101EFG', 'brand' => 'Suzuki', 'model' => 'Ertiga', 'vehicle_type' => 'car', 'year' => 2022],
+            ['license_plate' => 'N2202HIJ', 'brand' => 'Toyota', 'model' => 'Agya', 'vehicle_type' => 'car', 'year' => 2021],
+            ['license_plate' => 'AB3303KLM', 'brand' => 'Mitsubishi', 'model' => 'Xpander', 'vehicle_type' => 'car', 'year' => 2023],
+            ['license_plate' => 'DK4404NOP', 'brand' => 'Toyota', 'model' => 'Rush', 'vehicle_type' => 'car', 'year' => 2020],
+            ['license_plate' => 'P5505QRS', 'brand' => 'Honda', 'model' => 'Scoopy', 'vehicle_type' => 'motorcycle', 'year' => 2024],
         ];
 
         $index = 0;
@@ -34,7 +39,7 @@ class VehicleSeeder extends Seeder
             for ($i = 0; $i < $count; $i++) {
                 $vehicleData = $vehicles[$index % count($vehicles)];
 
-                Vehicle::firstOrCreate(
+                Vehicle::updateOrCreate(
                     ['license_plate' => $vehicleData['license_plate']],
                     [
                         'user_id' => $customer->id,

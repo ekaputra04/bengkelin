@@ -43,10 +43,20 @@ Route::prefix('admin')
             Route::resource('service-requests', BookingRequestController::class)
                 ->only(['index', 'create', 'store']);
 
+            Route::patch(
+                'service-requests/{bookingRequest}/status',
+                [BookingRequestController::class, 'updateStatus']
+            )->name('service-requests.update-status');
+
             Route::get(
                 'work-orders',
                 [BookingController::class, 'index']
             )->name('work-orders.index');
+
+            Route::get(
+                'work-orders/{booking}',
+                [BookingController::class, 'show']
+            )->name('work-orders.show');
 
             Route::patch(
                 'work-orders/{booking}',
@@ -78,6 +88,16 @@ Route::prefix('customer')
 
             Route::resource('vehicles', VehicleController::class)
                 ->only(['index', 'show']);
+
+            Route::get(
+                'work-orders',
+                [BookingController::class, 'index']
+            )->name('work-orders.index');
+
+            Route::get(
+                'work-orders/{booking}',
+                [BookingController::class, 'show']
+            )->name('work-orders.show');
         });
     });
 

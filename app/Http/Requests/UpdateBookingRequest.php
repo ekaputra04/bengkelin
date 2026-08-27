@@ -21,6 +21,11 @@ class UpdateBookingRequest extends FormRequest
                 'required',
                 Rule::in(['in_progress', 'completed', 'no_show']),
             ],
+            'end_time' => [
+                'nullable',
+                'date_format:H:i',
+                'required_if:status,completed',
+            ],
         ];
     }
 
@@ -28,6 +33,8 @@ class UpdateBookingRequest extends FormRequest
     {
         return [
             'status.in' => 'Status pengerjaan tidak valid.',
+            'end_time.date_format' => 'Jam selesai tidak valid.',
+            'end_time.required_if' => 'Jam selesai wajib diisi saat menyelesaikan order.',
         ];
     }
 }

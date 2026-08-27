@@ -1,21 +1,13 @@
-import * as React from "react";
+import * as React from 'react';
 
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarRail,
-} from "@/Components/ui/sidebar";
-import { TUser } from "@/types/types";
-import { Link, usePage } from "@inertiajs/react";
+    Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
+    SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail
+} from '@/Components/ui/sidebar';
+import { TUser } from '@/types/types';
+import { Link, usePage } from '@inertiajs/react';
 
-import { NavUser } from "./NavUser";
+import { NavUser } from './NavUser';
 
 const adminNavGroups = [
     {
@@ -94,6 +86,10 @@ const customerNavGroups = [
                 title: "Pengajuan Servis",
                 url: "/customer/dashboard/service-requests",
             },
+            {
+                title: "Riwayat Servis",
+                url: "/customer/dashboard/work-orders",
+            },
         ],
     },
 ];
@@ -109,16 +105,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const navGroups =
         user.role === "admin" ? adminNavGroups : customerNavGroups;
 
-    /*
-     * Item aktif jika URL saat ini sama atau berada di
-     * bawah path-nya (mis. /admin/dashboard/mechanics/3/edit
-     * mengaktifkan menu Mekanik). Root /admin/dashboard hanya
-     * aktif persis di halaman dashboard.
-     */
     const isActive = (itemUrl: string) =>
         itemUrl === "/admin/dashboard"
             ? url === "/admin/dashboard"
-            : url === itemUrl || url.startsWith(`${itemUrl}/`);
+            : itemUrl === "/customer/dashboard"
+              ? url === "/customer/dashboard"
+              : url === itemUrl || url.startsWith(`${itemUrl}/`);
 
     return (
         <Sidebar {...props} className="bg-background">

@@ -23,11 +23,6 @@ class PaymentController extends Controller
      */
     public function pay(Request $request, Booking $booking)
     {
-        abort_unless(
-            $booking->user_id === $request->user()->id,
-            403
-        );
-
         if ($booking->status !== BookingStatus::PENDING_PAYMENT) {
             return back()->with(
                 'error',

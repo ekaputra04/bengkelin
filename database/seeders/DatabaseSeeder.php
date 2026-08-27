@@ -12,6 +12,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ServiceTypeSeeder::class,
             VehicleSeeder::class,
+            BookingRequestSeeder::class,
+            BookingSeeder::class,
+            PaymentSeeder::class,
         ]);
     }
 }

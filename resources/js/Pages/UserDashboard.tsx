@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@/Components/ui/table";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { parseLocalDateTime } from "@/lib/utils";
+import { formatDate, formatTime } from "@/lib/utils";
 import { TCustomerBooking, TVehicle } from "@/types/types";
 import { Head, Link, usePage } from "@inertiajs/react";
 
@@ -31,18 +31,9 @@ const bookingStatuses: Record<string, string> = {
     no_show: "Tidak Datang",
 };
 
-const fmtDate = (value: string) =>
-    parseLocalDateTime(value).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-    });
+const fmtDate = (value: string) => formatDate(value);
 
-const fmtTime = (value: string) =>
-    parseLocalDateTime(value).toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+const fmtTime = (value: string) => formatTime(value);
 
 export default function UserDashboard({
     vehicles,

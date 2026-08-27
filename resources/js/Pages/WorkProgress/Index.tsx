@@ -4,6 +4,7 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import WorkProgressTimeline from "@/Components/WorkOrders/WorkProgressTimeline";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { formatDate } from "@/lib/utils";
 import { TMechanicWorkProgress } from "@/types/types";
 import { Head, router } from "@inertiajs/react";
 
@@ -13,12 +14,7 @@ interface Props {
 }
 
 export default function Index({ mechanics, selectedDate }: Props) {
-    const formattedDate = new Intl.DateTimeFormat("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    }).format(new Date(`${selectedDate}T00:00:00`));
+    const formattedDate = formatDate(selectedDate);
 
     const changeDate = (date: string) => {
         if (!date || date === selectedDate) {

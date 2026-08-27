@@ -65,7 +65,7 @@ export default function BookingDetail({ booking }: Props) {
                     />
 
                     <DetailItem
-                        label="Durasi"
+                        label="Durasi (estimasi)"
                         value={
                             serviceType
                                 ? `${serviceType.duration_minutes} menit`

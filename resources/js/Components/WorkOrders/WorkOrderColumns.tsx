@@ -1,11 +1,16 @@
 "use client";
+import { Eye } from 'lucide-react';
+
+import { useAuth } from '@/hooks/use-auth';
 import { formatDateTime } from '@/lib/utils';
 import { TWorkOrder } from '@/types/types';
+import { Link, router } from '@inertiajs/react';
 import { createColumnHelper } from '@tanstack/react-table';
 
 import BookingStatusBadge from '../Bookings/BookingStatusBadge';
 import { DataTableFeatures } from '../DataTable/DataTableFeatures';
 import { PaymentBadge } from '../PaymentBadge';
+import { Button } from '../ui/button';
 import { WorkOrderActions } from './WorkOrderActions';
 
 const columnHelper = createColumnHelper<DataTableFeatures, TWorkOrder>();
@@ -44,7 +49,7 @@ export const WorkOrderColumns = columnHelper.columns([
 
     columnHelper.accessor("start_at", {
         header: "Jadwal",
-        cell: (info) => formatDateTime(new Date(info.getValue())),
+        cell: (info) => formatDateTime(info.getValue()),
     }),
 
     columnHelper.accessor("status", {
@@ -60,6 +65,24 @@ export const WorkOrderColumns = columnHelper.columns([
 
     columnHelper.display({
         header: "Aksi",
-        cell: ({ row }) => <WorkOrderActions booking={row.original} />,
+
+        cell: ({ row }) => {
+            const { role } = useAuth();
+            return (
+                <div className="flex items-center gap-2">
+                    <Link
+                        href={route(
+                            role + ".work-orders.show",
+                            row.original.id,
+                        )}
+                    >
+                        <Button size={"sm"} variant={"outline"}>
+                            <Eye />
+                        </Button>
+                    </Link>
+                    <WorkOrderActions booking={row.original} />
+                </div>
+            );
+        },
     }),
 ]);
