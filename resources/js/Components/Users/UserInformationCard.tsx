@@ -1,21 +1,17 @@
-import { FormEvent } from "react";
+import { FormEvent } from 'react';
 
-import { ServiceTypeStatusBadge } from "@/Components/ServiceTypes/ServiceTypeStatusBadge";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Label } from "@/Components/ui/label";
+import { ServiceTypeStatusBadge } from '@/Components/ServiceTypes/ServiceTypeStatusBadge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Label } from '@/Components/ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
-import { Spinner } from "@/Components/ui/spinner";
-import { Switch } from "@/Components/ui/switch";
-import { UserRoleBadge } from "@/Components/Users/UserRoleBadge";
-import { userRoleOptions } from "@/consts/consts";
-import { TUser } from "@/types/types";
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/Components/ui/select';
+import { Spinner } from '@/Components/ui/spinner';
+import { Switch } from '@/Components/ui/switch';
+import { UserRoleBadge } from '@/Components/Users/UserRoleBadge';
+import { userRoleOptions } from '@/consts/consts';
+import { TUser } from '@/types/types';
 
 interface Props {
     user: TUser;
@@ -96,7 +92,6 @@ export default function UserInformationCard({
                         )}
                     </div>
 
-                    {/* Status */}
                     <div className="space-y-2">
                         <Label>Status</Label>
 
@@ -117,7 +112,6 @@ export default function UserInformationCard({
                         )}
                     </div>
 
-                    {/* Actions */}
                     {isEditing && (
                         <div className="flex justify-end gap-3 pt-5 border-t">
                             <Button

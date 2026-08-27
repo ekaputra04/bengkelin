@@ -1,59 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bengkelin
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem manajemen bengkel berbasis Laravel, Inertia, dan React untuk mengelola booking request, work order, pembayaran DP, progres mekanik, serta dashboard admin dan customer.
 
-## About Laravel
+<img
+  src="/public/images/hero.png"
+  style="width: 100%; height: auto;"
+/>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.2
+- Laravel 12
+- Inertia.js 2
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Fitur Utama
 
-## Learning Laravel
+- Dashboard admin dengan ringkasan operasional, distribusi status, beban mekanik, dan antrean request.
+- Dashboard customer dengan ringkasan booking pribadi, request aktif, kendaraan, dan histori servis.
+- Booking request dengan alur `waiting`, `processing`, `converted`, `cancelled`, dan `expired`.
+- Work order dengan status booking, penyelesaian dinamis `end_at`, dan integrasi pembayaran DP.
+- Validasi overlap jadwal mekanik agar booking baru tidak lolos jika masih berbenturan dengan slot aktif.
+- Seeder data demo untuk kendaraan, booking request, booking, dan payment pada rentang 25-30 Agustus.
+- Timezone aplikasi mengikuti WITA (`Asia/Makassar`) agar selaras dengan Bali.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Peran Pengguna
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- `admin`: mengelola dashboard, master data, booking request, work order, dan progres mekanik.
+- `customer`: mengajukan booking request, melihat work order, dan memantau kendaraan milik sendiri.
+- `mechanic`: dipakai sebagai resource penugasan booking dan monitoring progres.
 
-## Laravel Sponsors
+## Setup Lokal
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. Install dependency backend dan frontend.
+2. Siapkan file environment.
+3. Generate app key.
+4. Jalankan migrasi dan seeder.
+5. Jalankan server Laravel dan Vite.
 
-### Premium Partners
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm install
+composer run dev
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Jika memakai Windows PowerShell dan `cp` tidak tersedia sebagai alias yang diinginkan, gunakan:
 
-## Contributing
+```powershell
+Copy-Item .env.example .env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Seeder Demo
 
-## Code of Conduct
+Seeder utama dipanggil lewat `DatabaseSeeder` dan saat ini mencakup data:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- service type
+- customer
+- mechanic
+- vehicle
+- booking request
+- booking
+- payment
 
-## Security Vulnerabilities
+Untuk menyegarkan data demo:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate:fresh --seed
+```
 
-## License
+## Testing dan Build
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan test
+npm run build
+```
+
+## Struktur Modul Penting
+
+- `app/Http/Controllers/AdminDashboardController.php`
+- `app/Http/Controllers/DashboardController.php`
+- `app/Services/Booking/ProcessBookingRequest.php`
+- `resources/js/Pages/Dashboard.tsx`
+- `resources/js/Pages/UserDashboard.tsx`
+- `resources/js/Components/Dashboard`
+- `resources/js/Components/CustomerDashboard`
+
+## Catatan Operasional
+
+- Booking customer yang overlap dengan booking lain pada mekanik yang sama akan tetap tertahan.
+- Request `processing` berarti slot sudah dipilih dan sistem sedang menunggu pembayaran dari payment gateway.
+- Saat booking diselesaikan, `end_at` dapat disesuaikan dari dialog penyelesaian work order.
+
+## Lisensi
+
+Proyek ini menggunakan lisensi MIT.

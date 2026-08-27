@@ -71,7 +71,6 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
 
     return (
         <div className="space-y-4">
-            {/* Timeline */}
             <div className="bg-card border rounded-xl overflow-x-auto">
                 <div
                     className="min-w-max"
@@ -79,14 +78,11 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
                         width: 180 + timelineWidth,
                     }}
                 >
-                    {/* Header */}
                     <div className="flex bg-muted/40 border-b">
-                        {/* Mechanic column */}
                         <div className="left-0 z-20 sticky flex items-center bg-muted/40 px-4 border-r w-45 h-12 shrink-0">
                             <span className="font-medium text-sm">Mekanik</span>
                         </div>
 
-                        {/* Timeline header */}
                         <div
                             className="relative h-12"
                             style={{
@@ -121,13 +117,11 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
                         </div>
                     </div>
 
-                    {/* Mechanics */}
                     {mechanics.map((mechanic) => (
                         <div
                             key={mechanic.id}
                             className="flex border-b last:border-b-0"
                         >
-                            {/* Mechanic */}
                             <div className="left-0 z-10 sticky flex items-center bg-card px-4 border-r w-45 h-24 shrink-0">
                                 <div>
                                     <p className="font-medium text-sm">
@@ -140,14 +134,12 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
                                 </div>
                             </div>
 
-                            {/* Timeline */}
                             <div
                                 className="relative h-24"
                                 style={{
                                     width: timelineWidth,
                                 }}
                             >
-                                {/* Grid */}
                                 <div className="absolute inset-0 flex">
                                     {Array.from(
                                         {
@@ -170,7 +162,6 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
                                     )}
                                 </div>
 
-                                {/* Bookings */}
                                 {mechanic.bookings.map((booking) => {
                                     const { left, width } =
                                         getBookingStyle(booking);
@@ -224,7 +215,6 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
                 </div>
             </div>
 
-            {/* Legend */}
             <div className="flex md:justify-end">
                 <div className="flex flex-wrap justify-start md:justify-end gap-x-5 gap-y-2">
                     {Object.entries(statusLabels).map(([status, label]) => {
