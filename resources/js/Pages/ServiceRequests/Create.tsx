@@ -1,18 +1,20 @@
 import { ArrowLeft } from 'lucide-react';
 
-import { ServiceRequestForm } from '@/Components/ServiceRequests/ServiceRequestForm';
+import { AdminServiceRequestForm } from '@/Components/ServiceRequests/AdminServiceRequestForm';
+import { CustomerServiceRequestForm } from '@/Components/ServiceRequests/CustomerServiceRequestForm';
 import { Button } from '@/Components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { TServiceType, TVehicle } from '@/types/types';
+import { TServiceType, TUser, TVehicle } from '@/types/types';
 import { Head, Link } from '@inertiajs/react';
 
 interface Props {
     vehicles: TVehicle[];
     serviceTypes: TServiceType[];
+    customers: TUser[];
 }
 
-export default function Create({ vehicles, serviceTypes }: Props) {
+export default function Create({ vehicles, serviceTypes, customers }: Props) {
     const { role } = useAuth();
 
     return (
@@ -41,17 +43,25 @@ export default function Create({ vehicles, serviceTypes }: Props) {
                         </h1>
 
                         <p className="text-muted-foreground text-sm">
-                            Pilih kendaraan, jenis servis, lalu tentukan tanggal
-                            & jam kedatangan.
+                            {role === 'admin'
+                                ? 'Pilih customer terdaftar, kendaraan, jenis servis, lalu tentukan tanggal dan jam kedatangan.'
+                                : 'Pilih kendaraan, jenis servis, lalu tentukan tanggal dan jam kedatangan.'}
                         </p>
                     </div>
                 </div>
 
                 <div className="bg-card p-6 border rounded-xl">
-                    <ServiceRequestForm
-                        vehicles={vehicles}
-                        serviceTypes={serviceTypes}
-                    />
+                    {role === 'admin' ? (
+                        <AdminServiceRequestForm
+                            customers={customers}
+                            serviceTypes={serviceTypes}
+                        />
+                    ) : (
+                        <CustomerServiceRequestForm
+                            vehicles={vehicles}
+                            serviceTypes={serviceTypes}
+                        />
+                    )}
                 </div>
             </div>
         </DashboardLayout>

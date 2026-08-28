@@ -1,17 +1,17 @@
 "use client";
-import { Eye } from 'lucide-react';
+import { Eye } from "lucide-react";
 
-import { useAuth } from '@/hooks/use-auth';
-import { formatDateTime } from '@/lib/utils';
-import { TWorkOrder } from '@/types/types';
-import { Link, router } from '@inertiajs/react';
-import { createColumnHelper } from '@tanstack/react-table';
+import { useAuth } from "@/hooks/use-auth";
+import { formatDateTime } from "@/lib/utils";
+import { TWorkOrder } from "@/types/types";
+import { Link, router } from "@inertiajs/react";
+import { createColumnHelper } from "@tanstack/react-table";
 
-import BookingStatusBadge from '../Bookings/BookingStatusBadge';
-import { DataTableFeatures } from '../DataTable/DataTableFeatures';
-import { PaymentBadge } from '../PaymentBadge';
-import { Button } from '../ui/button';
-import { WorkOrderActions } from './WorkOrderActions';
+import BookingStatusBadge from "../Bookings/BookingStatusBadge";
+import { DataTableFeatures } from "../DataTable/DataTableFeatures";
+import { PaymentBadge } from "../PaymentBadge";
+import { Button } from "../ui/button";
+import { WorkOrderActions } from "./WorkOrderActions";
 
 const columnHelper = createColumnHelper<DataTableFeatures, TWorkOrder>();
 
@@ -80,7 +80,9 @@ export const WorkOrderColumns = columnHelper.columns([
                             <Eye />
                         </Button>
                     </Link>
-                    <WorkOrderActions booking={row.original} />
+                    {role == "admin" && (
+                        <WorkOrderActions booking={row.original} />
+                    )}
                 </div>
             );
         },

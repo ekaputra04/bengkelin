@@ -98,6 +98,11 @@ Route::prefix('customer')
                 'work-orders/{booking}',
                 [BookingController::class, 'show']
             )->name('work-orders.show');
+
+            Route::get(
+                'work-progress',
+                [WorkProgressController::class, 'index']
+            )->name('work-progress.index');
         });
     });
 

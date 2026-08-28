@@ -6,8 +6,8 @@ import { CustomerStatusDistribution } from "@/Components/CustomerDashboard/Custo
 import { CustomerVehiclesAndHistory } from "@/Components/CustomerDashboard/CustomerVehiclesAndHistory";
 import { CustomerDashboardProps } from "@/Components/CustomerDashboard/types";
 import DashboardLayout from "@/Layouts/DashboardLayout";
-import { Head, usePage } from "@inertiajs/react";
 import { TUser } from "@/types/types";
+import { Head, usePage } from "@inertiajs/react";
 
 export default function UserDashboard({
     overview,

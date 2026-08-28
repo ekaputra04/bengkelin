@@ -1,11 +1,17 @@
-import { bookingStatusConfig } from '@/consts/consts';
-import { cn, getTimeInMinutes } from '@/lib/utils';
-import { useBookingStore } from '@/stores/use-booking-store';
-import { useIsDialogOpenStore } from '@/stores/use-is-open-dialog-store';
-import { TBooking, TBookingStatus, TMechanicWorkProgress, TWorkOrder } from '@/types/types';
+import { bookingStatusConfig } from "@/consts/consts";
+import { useAuth } from "@/hooks/use-auth";
+import { cn, getTimeInMinutes } from "@/lib/utils";
+import { useBookingStore } from "@/stores/use-booking-store";
+import { useIsDialogOpenStore } from "@/stores/use-is-open-dialog-store";
+import {
+    TBooking,
+    TBookingStatus,
+    TMechanicWorkProgress,
+    TWorkOrder,
+} from "@/types/types";
 
-import BookingDetail from '../Bookings/BookingDetail';
-import DialogTemplate from '../DialogTemplate';
+import BookingDetail from "../Bookings/BookingDetail";
+import DialogTemplate from "../DialogTemplate";
 
 interface Props {
     mechanics: TMechanicWorkProgress[];
@@ -68,6 +74,8 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
     const { selectedData, setSelectedData } = useBookingStore();
 
     const { dialogType, openDialog } = useIsDialogOpenStore();
+
+    const { role } = useAuth();
 
     return (
         <div className="space-y-4">
@@ -243,7 +251,7 @@ export default function WorkProgressTimeline({ mechanics }: Props) {
                 </div>
             </div>
 
-            {dialogType === "show" && selectedData && (
+            {dialogType === "show" && role == "admin" && selectedData && (
                 <DialogTemplate
                     className="max-w-[90vw] max-h-[90vh] overflow-y-auto"
                     title="Detail Layanan"

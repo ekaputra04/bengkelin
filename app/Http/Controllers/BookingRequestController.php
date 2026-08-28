@@ -10,6 +10,7 @@ use App\Http\Requests\StoreBookingRequestRequest;
 use App\Models\Booking;
 use App\Models\BookingRequest;
 use App\Models\ServiceType;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Booking\ProcessBookingRequest;
 use App\Services\Xendit\XenditService;
@@ -58,16 +59,31 @@ class BookingRequestController extends Controller
      */
     public function create(Request $request): Response
     {
+        $user = $request->user();
+        $serviceTypes = ServiceType::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        if ($user->role === UserRole::ADMIN) {
+            return Inertia::render('ServiceRequests/Create', [
+                'vehicles' => [],
+                'serviceTypes' => $serviceTypes,
+                'customers' => User::query()
+                    ->where('role', UserRole::CUSTOMER)
+                    ->with(['vehicles' => fn($query) => $query->orderBy('brand')->orderBy('model')])
+                    ->orderBy('name')
+                    ->get(),
+            ]);
+        }
+
         return Inertia::render('ServiceRequests/Create', [
             'vehicles' => Vehicle::query()
-                ->where('user_id', $request->user()->id)
+                ->where('user_id', $user->id)
                 ->orderBy('brand')
                 ->get(),
-
-            'serviceTypes' => ServiceType::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(),
+            'serviceTypes' => $serviceTypes,
+            'customers' => [],
         ]);
     }
 
@@ -81,10 +97,13 @@ class BookingRequestController extends Controller
         ProcessBookingRequest $processBookingRequest
     ) {
         $data = $request->validated();
+        $targetUserId = $request->user()->role === UserRole::ADMIN
+            ? (int) $data['user_id']
+            : $request->user()->id;
 
         if (empty($data['vehicle_id'])) {
             $vehicle = Vehicle::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $targetUserId,
 
                 'license_plate' => strtoupper(
                     trim($data['vehicle']['license_plate'])
@@ -100,7 +119,7 @@ class BookingRequestController extends Controller
         }
 
         $bookingRequest = BookingRequest::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $targetUserId,
             'vehicle_id' => $data['vehicle_id'],
             'service_type_id' => $data['service_type_id'],
             'requested_start_at' => $data['requested_start_at'],

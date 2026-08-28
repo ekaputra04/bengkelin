@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Http;
 function submitServiceRequest(User $user, array $payload)
 {
     return test()->actingAs($user)->post(
-        route('service-requests.store'),
+        route($user->role->value . '.service-requests.store'),
         $payload
     );
 }
@@ -89,7 +89,7 @@ it('mengubah pengajuan servis menjadi order saat mekanik tersedia', function () 
     // Pengajuan masuk ke booking_requests lalu langsung jadi order (bookings).
     $bookingRequest = BookingRequest::first();
 
-    expect($bookingRequest->status->value)->toBe('converted');
+    expect($bookingRequest->status->value)->toBe('processing');
     expect($bookingRequest->mechanic_user_id)->not->toBeNull();
 
     $booking = Booking::first();
@@ -164,6 +164,93 @@ it('menolak kendaraan milik customer lain', function () {
     $intruder = User::factory()->create();
 
     submitServiceRequest($intruder, serviceRequestPayload([
+        'vehicle_id' => $vehicle->id,
+        'vehicle' => null,
+    ]))->assertSessionHasErrors('vehicle_id');
+
+    expect(BookingRequest::count())->toBe(0);
+});
+
+it('admin dapat mengajukan service request untuk customer terdaftar dengan kendaraan baru', function () {
+    fakeXenditInvoice();
+
+    createMechanicUser();
+
+    $admin = User::factory()->create([
+        'role' => UserRole::ADMIN,
+    ]);
+
+    $customer = User::factory()->create([
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    submitServiceRequest($admin, serviceRequestPayload([
+        'user_id' => $customer->id,
+    ]))->assertRedirect('https://checkout.xendit.co/web/inv-fake-123');
+
+    $vehicle = Vehicle::where('user_id', $customer->id)->first();
+    $booking = Booking::first();
+
+    expect($vehicle)->not->toBeNull();
+    expect($booking)->not->toBeNull();
+    expect($booking->user_id)->toBe($customer->id);
+    expect($booking->vehicle_id)->toBe($vehicle->id);
+});
+
+it('admin dapat memilih kendaraan existing milik customer yang dipilih', function () {
+    fakeXenditInvoice();
+
+    createMechanicUser();
+
+    $admin = User::factory()->create([
+        'role' => UserRole::ADMIN,
+    ]);
+
+    $customer = User::factory()->create([
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $vehicle = Vehicle::create([
+        'user_id' => $customer->id,
+        'license_plate' => 'B2026ADM',
+        'brand' => 'Toyota',
+        'model' => 'Avanza',
+        'vehicle_type' => 'car',
+    ]);
+
+    submitServiceRequest($admin, serviceRequestPayload([
+        'user_id' => $customer->id,
+        'vehicle_id' => $vehicle->id,
+        'vehicle' => null,
+    ]))->assertRedirect('https://checkout.xendit.co/web/inv-fake-123');
+
+    expect(Booking::first()->user_id)->toBe($customer->id);
+    expect(Booking::first()->vehicle_id)->toBe($vehicle->id);
+});
+
+it('admin tidak dapat memilih kendaraan milik customer lain', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::ADMIN,
+    ]);
+
+    $customerA = User::factory()->create([
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $customerB = User::factory()->create([
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $vehicle = Vehicle::create([
+        'user_id' => $customerA->id,
+        'license_plate' => 'B2026BAD',
+        'brand' => 'Honda',
+        'model' => 'Brio',
+        'vehicle_type' => 'car',
+    ]);
+
+    submitServiceRequest($admin, serviceRequestPayload([
+        'user_id' => $customerB->id,
         'vehicle_id' => $vehicle->id,
         'vehicle' => null,
     ]))->assertSessionHasErrors('vehicle_id');

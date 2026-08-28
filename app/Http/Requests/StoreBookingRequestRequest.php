@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UserRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,21 @@ class StoreBookingRequestRequest extends FormRequest
      */
     public function rules(): array
     {
+        $targetUserId = $this->targetUserId();
+
         return [
+            'user_id' => [
+                Rule::requiredIf(
+                    fn() => $this->user()?->role === UserRole::ADMIN
+                ),
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->where(
+                        fn($query) => $query->where('role', UserRole::CUSTOMER->value)
+                    ),
+            ],
+
             // Pilih kendaraan yang sudah terdaftar, atau daftarkan baru lewat input `vehicle`.
             'vehicle_id' => [
                 'required_without:vehicle.license_plate',
@@ -31,7 +46,7 @@ class StoreBookingRequestRequest extends FormRequest
                 'integer',
                 Rule::exists('vehicles', 'id')
                     ->where(
-                        fn($query) => $query->where('user_id', $this->user()->id)
+                        fn($query) => $query->where('user_id', $targetUserId)
                     ),
             ],
 
@@ -93,6 +108,10 @@ class StoreBookingRequestRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'user_id.required' => 'Pilih pengguna terlebih dahulu.',
+
+            'user_id.exists' => 'Pengguna tidak ditemukan atau bukan customer.',
+
             'vehicle_id.required_without' => 'Pilih kendaraan atau daftarkan kendaraan baru.',
 
             'vehicle_id.exists' => 'Kendaraan tidak ditemukan.',
@@ -113,5 +132,14 @@ class StoreBookingRequestRequest extends FormRequest
 
             // 'requested_start_at.after' => 'Waktu servis harus setelah waktu sekarang.',
         ];
+    }
+
+    private function targetUserId(): ?int
+    {
+        if ($this->user()?->role === UserRole::ADMIN) {
+            return $this->integer('user_id') ?: null;
+        }
+
+        return $this->user()?->id;
     }
 }

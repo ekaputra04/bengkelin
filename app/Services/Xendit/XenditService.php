@@ -3,6 +3,7 @@
 namespace App\Services\Xendit;
 
 use App\Enums\PaymentStatus;
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Http\Client\ConnectionException;
@@ -49,10 +50,18 @@ class XenditService
         );
 
         /*
-         * Customer dikembalikan ke daftar pengajuan servis
-         * setelah menyelesaikan (atau membatalkan) pembayaran.
-         */
-        $redirectUrl = route('customer.service-requests.index');
+     * Redirect berdasarkan user yang sedang login,
+     * bukan berdasarkan pemilik booking.
+     *
+     * Admin dapat membuat booking untuk customer,
+     * sehingga booking->user tetap customer,
+     * tetapi admin tetap harus dikembalikan ke halaman admin.
+     */
+        $redirectUrl = match (auth()->user()?->role) {
+            UserRole::ADMIN => route('admin.service-requests.index'),
+            UserRole::CUSTOMER => route('customer.service-requests.index'),
+            default => route('login'),
+        };
 
         $response = Http::withBasicAuth(
             (string) config('services.xendit.secret_key'),

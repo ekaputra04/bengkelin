@@ -1,13 +1,21 @@
-import * as React from 'react';
+import * as React from "react";
 
 import {
-    Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
-    SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail
-} from '@/Components/ui/sidebar';
-import { TUser } from '@/types/types';
-import { Link, usePage } from '@inertiajs/react';
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarRail,
+} from "@/Components/ui/sidebar";
+import { TUser } from "@/types/types";
+import { Link, usePage } from "@inertiajs/react";
 
-import { NavUser } from './NavUser';
+import { NavUser } from "./NavUser";
 
 const adminNavGroups = [
     {
@@ -89,6 +97,15 @@ const customerNavGroups = [
             {
                 title: "Riwayat Servis",
                 url: "/customer/dashboard/work-orders",
+            },
+        ],
+    },
+    {
+        title: "Slot Mekanik",
+        items: [
+            {
+                title: "Slot Mekanik",
+                url: "/customer/dashboard/work-progress",
             },
         ],
     },
