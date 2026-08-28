@@ -1,16 +1,22 @@
-import { Search, X } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { Search, X } from "lucide-react";
+import { FormEvent, useState } from "react";
 
-import { DataTable } from '@/Components/DataTable/DataTable';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
+import { DataTable } from "@/Components/DataTable/DataTable";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
 import {
-    Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue
-} from '@/Components/ui/select';
-import { WorkOrderColumns } from '@/Components/WorkOrders/WorkOrderColumns';
-import DashboardLayout from '@/Layouts/DashboardLayout';
-import { TWorkOrder } from '@/types/types';
-import { Head, router } from '@inertiajs/react';
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/Components/ui/select";
+import { WorkOrderColumns } from "@/Components/WorkOrders/WorkOrderColumns";
+import { useAuth } from "@/hooks/use-auth";
+import DashboardLayout from "@/Layouts/DashboardLayout";
+import { TWorkOrder } from "@/types/types";
+import { Head, router } from "@inertiajs/react";
 
 interface PaginationLink {
     url: string | null;
@@ -64,9 +70,11 @@ export default function Index({ bookings, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? "");
     const [status, setStatus] = useState(filters.status ?? "");
 
+    const { role } = useAuth();
+
     const applyFilters = (nextSearch: string, nextStatus: string) => {
         router.get(
-            route("admin.work-orders.index"),
+            route(role + ".work-orders.index"),
             {
                 search: nextSearch || undefined,
                 status: nextStatus || undefined,

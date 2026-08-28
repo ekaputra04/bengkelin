@@ -11,6 +11,7 @@ use App\Models\Vehicle;
 use App\Services\Booking\ProcessBookingRequest;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function submitServiceRequest(User $user, array $payload)
 {
@@ -256,6 +257,146 @@ it('admin tidak dapat memilih kendaraan milik customer lain', function () {
     ]))->assertSessionHasErrors('vehicle_id');
 
     expect(BookingRequest::count())->toBe(0);
+});
+
+it('admin dapat mencari dan memfilter booking request berdasarkan status dan kata kunci', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::ADMIN,
+    ]);
+
+    $serviceType = ServiceType::create([
+        'name' => 'Tune Up',
+        'description' => null,
+        'duration_minutes' => 60,
+        'price' => 250000,
+        'dp_amount' => 50000,
+        'is_active' => true,
+    ]);
+
+    $customerA = User::factory()->create([
+        'name' => 'Andi Saputra',
+        'email' => 'andi@example.test',
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $customerB = User::factory()->create([
+        'name' => 'Bela Sari',
+        'email' => 'bela@example.test',
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $vehicleA = Vehicle::create([
+        'user_id' => $customerA->id,
+        'license_plate' => 'B1234AND',
+        'brand' => 'Honda',
+        'model' => 'Brio',
+        'vehicle_type' => 'car',
+    ]);
+
+    $vehicleB = Vehicle::create([
+        'user_id' => $customerB->id,
+        'license_plate' => 'DK9999BEL',
+        'brand' => 'Yamaha',
+        'model' => 'NMax',
+        'vehicle_type' => 'motorcycle',
+    ]);
+
+    $waitingRequest = BookingRequest::create([
+        'user_id' => $customerA->id,
+        'vehicle_id' => $vehicleA->id,
+        'service_type_id' => $serviceType->id,
+        'requested_start_at' => Date::tomorrow()->setTime(9, 0),
+        'status' => BookingRequestStatus::WAITING,
+    ]);
+
+    BookingRequest::create([
+        'user_id' => $customerB->id,
+        'vehicle_id' => $vehicleB->id,
+        'service_type_id' => $serviceType->id,
+        'requested_start_at' => Date::tomorrow()->setTime(10, 0),
+        'status' => BookingRequestStatus::PROCESSING,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.service-requests.index', [
+            'search' => 'Andi',
+            'status' => 'waiting',
+        ]))
+        ->assertInertia(
+            fn(Assert $inertia) => $inertia
+                ->component('ServiceRequests/Index')
+                ->where('filters.search', 'Andi')
+                ->where('filters.status', 'waiting')
+                ->has('bookingRequests.data', 1)
+                ->where('bookingRequests.data.0.id', $waitingRequest->id)
+        );
+});
+
+it('customer hanya melihat dan memfilter booking request miliknya sendiri', function () {
+    $customer = User::factory()->create([
+        'name' => 'Rina',
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $otherCustomer = User::factory()->create([
+        'name' => 'Tono',
+        'role' => UserRole::CUSTOMER,
+    ]);
+
+    $serviceType = ServiceType::create([
+        'name' => 'Ganti Ban',
+        'description' => null,
+        'duration_minutes' => 30,
+        'price' => 100000,
+        'dp_amount' => 25000,
+        'is_active' => true,
+    ]);
+
+    $customerVehicle = Vehicle::create([
+        'user_id' => $customer->id,
+        'license_plate' => 'B7777RIN',
+        'brand' => 'Suzuki',
+        'model' => 'Ertiga',
+        'vehicle_type' => 'car',
+    ]);
+
+    $otherVehicle = Vehicle::create([
+        'user_id' => $otherCustomer->id,
+        'license_plate' => 'B8888TON',
+        'brand' => 'Toyota',
+        'model' => 'Rush',
+        'vehicle_type' => 'car',
+    ]);
+
+    $ownRequest = BookingRequest::create([
+        'user_id' => $customer->id,
+        'vehicle_id' => $customerVehicle->id,
+        'service_type_id' => $serviceType->id,
+        'requested_start_at' => Date::tomorrow()->setTime(8, 0),
+        'status' => BookingRequestStatus::WAITING,
+    ]);
+
+    BookingRequest::create([
+        'user_id' => $otherCustomer->id,
+        'vehicle_id' => $otherVehicle->id,
+        'service_type_id' => $serviceType->id,
+        'requested_start_at' => Date::tomorrow()->setTime(11, 0),
+        'status' => BookingRequestStatus::WAITING,
+    ]);
+
+    $this->actingAs($customer)
+        ->get(route('customer.service-requests.index', [
+            'search' => 'RIN',
+            'status' => 'waiting',
+        ]))
+        ->assertInertia(
+            fn(Assert $inertia) => $inertia
+                ->component('ServiceRequests/Index')
+                ->where('filters.search', 'RIN')
+                ->where('filters.status', 'waiting')
+                ->has('bookingRequests.data', 1)
+                ->where('bookingRequests.data.0.id', $ownRequest->id)
+        );
 });
 
 it('menahan request overlap selama booking sebelumnya masih in_progress', function () {

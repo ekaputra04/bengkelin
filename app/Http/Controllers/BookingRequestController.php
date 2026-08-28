@@ -28,28 +28,50 @@ class BookingRequestController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $bookingRequests = null;
+        $search = $request->string('search')->trim()->toString();
+        $status = BookingRequestStatus::tryFrom(
+            $request->string('status')->trim()->toString()
+        );
         $withRelations = ['vehicle', 'serviceType', 'booking', 'user'];
+        $bookingRequests = BookingRequest::query()
+            ->with($withRelations)
+            ->when(
+                $user->role === UserRole::CUSTOMER,
+                fn($query) => $query->where('user_id', $user->id)
+            )
+            ->when($search, function ($query) use ($search, $user) {
+                $query->where(function ($query) use ($search, $user) {
+                    $query
+                        ->orWhereHas('vehicle', function ($query) use ($search) {
+                            $query
+                                ->where('license_plate', 'like', "%{$search}%")
+                                ->orWhere('brand', 'like', "%{$search}%")
+                                ->orWhere('model', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('serviceType', function ($query) use ($search) {
+                            $query->where('name', 'like', "%{$search}%");
+                        });
 
-
-        if ($user->role == UserRole::ADMIN) {
-            $bookingRequests = BookingRequest::query()
-                ->with($withRelations)
-                ->latest()
-                ->paginate(10)
-                ->withQueryString();
-        }
-        if ($user->role == UserRole::CUSTOMER) {
-            $bookingRequests = BookingRequest::query()
-                ->where('user_id', $request->user()->id)
-                ->with($withRelations)
-                ->latest()
-                ->paginate(10)
-                ->withQueryString();
-        }
+                    if ($user->role === UserRole::ADMIN) {
+                        $query->orWhereHas('user', function ($query) use ($search) {
+                            $query
+                                ->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
+                    }
+                });
+            })
+            ->when($status, fn($query) => $query->where('status', $status))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('ServiceRequests/Index', [
             'bookingRequests' => $bookingRequests,
+            'filters' => [
+                'search' => $search,
+                'status' => $status?->value,
+            ],
         ]);
     }
 
